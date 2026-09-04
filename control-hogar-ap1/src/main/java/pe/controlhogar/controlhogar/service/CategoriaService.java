@@ -2,49 +2,17 @@ package pe.controlhogar.controlhogar.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import pe.controlhogar.controlhogar.entity.Categoria;
-import pe.controlhogar.controlhogar.repository.CategoriaRepository;
 
-@Service
-public class CategoriaService {
+public interface CategoriaService {
 
-    @Autowired
-    private CategoriaRepository repository;
+    List<Categoria> listar();
 
-    public List<Categoria> listar() {
-        return repository.findByActivoTrueOrderByNombreAsc();
-    }
+    Categoria guardar(Categoria categoria);
 
-    public Categoria guardar(Categoria categoria) {
-        return repository.save(categoria);
-    }
+    Categoria buscarPorId(Long id);
 
-    public Categoria buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Categoría no encontrada con ID: " + id
-                ));
-    }
+    Categoria actualizar(Long id, Categoria datos);
 
-    public Categoria actualizar(Long id, Categoria datos) {
-        Categoria categoriaExistente = buscarPorId(id);
-
-        categoriaExistente.setNombre(datos.getNombre());
-        categoriaExistente.setDescripcion(datos.getDescripcion());
-
-        if (datos.getActivo() != null) {
-            categoriaExistente.setActivo(datos.getActivo());
-        }
-
-        return repository.save(categoriaExistente);
-    }
-
-    public void eliminar(Long id) {
-        Categoria categoria = buscarPorId(id);
-        categoria.setActivo(false);
-        repository.save(categoria);
-    }
+    void eliminar(Long id);
 }
