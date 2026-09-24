@@ -3,7 +3,6 @@ package pe.controlhogar.controlhogar.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import pe.controlhogar.controlhogar.entity.Movimiento;
@@ -12,8 +11,11 @@ import pe.controlhogar.controlhogar.repository.MovimientoRepository;
 @Service
 public class MovimientoService {
 
-    @Autowired
-    private MovimientoRepository repository;
+    private final MovimientoRepository repository;
+
+    public MovimientoService(MovimientoRepository repository) {
+        this.repository = repository;
+    }
 
     public List<Movimiento> listar() {
         return repository.findByEliminadoEnIsNullOrderByFechaDesc();
@@ -26,8 +28,7 @@ public class MovimientoService {
     public Movimiento buscarPorId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException(
-                "Movimiento no encontrado con ID: " + id
-        ));
+                        "Movimiento no encontrado con ID: " + id));
     }
 
     public Movimiento actualizar(Long id, Movimiento datos) {

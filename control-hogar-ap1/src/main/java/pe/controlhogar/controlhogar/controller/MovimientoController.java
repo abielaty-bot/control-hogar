@@ -2,7 +2,6 @@ package pe.controlhogar.controlhogar.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,8 +22,11 @@ import pe.controlhogar.controlhogar.service.MovimientoService;
 @CrossOrigin("*")
 public class MovimientoController {
 
-    @Autowired
-    private MovimientoService service;
+    private final MovimientoService service;
+
+    public MovimientoController(MovimientoService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public List<Movimiento> listar() {
