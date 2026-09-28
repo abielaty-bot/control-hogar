@@ -2,6 +2,8 @@ package pe.controlhogar.controlhogar.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -49,6 +51,7 @@ public class Usuario {
     @Column(length = 20)
     private String telefono;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "La contraseña protegida es obligatoria")
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
