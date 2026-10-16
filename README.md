@@ -173,3 +173,21 @@ El silabo pedia Heroku, pero Heroku exige tarjeta; se despliega en **Render** (g
 4. **Create Web Service** y esperar el primer despliegue (compila con el Dockerfile). La app queda en `https://control-hogar.onrender.com` (el nombre puede variar).
 
 Notas: el plan gratuito duerme el servicio tras 15 minutos sin uso y despierta en ~1 minuto. Las tablas se crean solas al arrancar (`ddl-auto=update`), pero la BD arranca vacia: registrar un usuario nuevo con `POST /api/usuarios`. Ademas, el `pom.xml` declara los repositorios de Jaspersoft porque `jasperreports-pdf` usa una version de OpenPDF que no esta en Maven Central; sin eso, cualquier compilacion limpia (como la de Docker) falla.
+
+## Frontend Angular (Bloque 6 - Temas 11 y 12)
+
+SPA en Angular (componentes standalone) dentro de la carpeta `frontend/`, que consume la API REST:
+
+- **Login** con el correo y la contrasena del usuario (HTTP Basic contra Spring Security), guard de rutas e **interceptor** que agrega el encabezado `Authorization` a cada peticion.
+- **Paginas**: Inicio (tarjetas de ingresos/gastos/balance y recientes), Movimientos (con paginacion), Categorias, Cuentas, Presupuestos (con su detalle por categoria), Deudas (con registro de pagos) y Reportes (totales por categoria y descarga del PDF de Jasper).
+- El backend habilito **CORS** para `http://localhost:4200` en `SecurityConfig`.
+
+Para ejecutarlo (requiere Node.js 20+):
+
+```
+cd frontend
+npm install
+npm start
+```
+
+y abrir `http://localhost:4200` con el backend corriendo en el puerto 8080. La URL de la API se configura en `frontend/src/environments/environment.ts` (desarrollo) y `environment.prod.ts` (produccion, con la URL de Render del Bloque 5).
