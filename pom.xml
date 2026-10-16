@@ -71,6 +71,13 @@
             <version>${jasperreports.version}</version>
         </dependency>
 
+        <!-- Gráficos para los reportes (JFreeChart) -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-charts</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+
         <!-- Pruebas de JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

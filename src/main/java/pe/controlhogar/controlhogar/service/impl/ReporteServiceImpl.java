@@ -1,10 +1,16 @@
 package pe.controlhogar.controlhogar.service.impl;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.core.io.ClassPathResource;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -82,6 +88,66 @@ public class ReporteServiceImpl implements ReporteService {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "No se pudo generar el reporte PDF de usuarios",
+                    excepcion);
+        }
+    }
+
+    /**
+     * Reporte disenado con Jasper Studio (archivo .jrxml): tabla de totales
+     * por categoria con resumen general y grafico circular. Los datos salen
+     * de la consulta JPQL de totales por categoria del Bloque 1.
+     */
+    @Override
+    public byte[] generarReporteMovimientosPdf(
+            Long usuarioId,
+            String tipo) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encontró un usuario con el ID " + usuarioId));
+
+        List<Map<String, ?>> datos = new ArrayList<>();
+
+        for (TotalPorCategoriaDTO total : totalPorCategoria(usuarioId, tipo)) {
+            Map<String, Object> fila = new HashMap<>();
+            fila.put("categoria",
+                    total.categoria() != null
+                            ? total.categoria()
+                            : "Sin categoría");
+            fila.put("cantidad", total.cantidad());
+            fila.put("total", total.total());
+            datos.add(fila);
+        }
+
+        Map<String, Object> parametros = new HashMap<>();
+        parametros.put("NOMBRE_USUARIO",
+                usuario.getNombres() + " " + usuario.getApellidoPaterno());
+        parametros.put("TIPO_MOVIMIENTO", tipo);
+        parametros.put("GENERADO_EN",
+                LocalDateTime.now().format(
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+
+        // La plantilla se compila en cada solicitud para mantener el codigo
+        // simple; en un entorno productivo el reporte compilado se cachea.
+        try (InputStream plantilla = new ClassPathResource(
+                "reportes/movimientos_por_categoria.jrxml")
+                .getInputStream()) {
+
+            JasperReport reporteCompilado =
+                    JasperCompileManager.compileReport(plantilla);
+
+            JasperPrint reporteLleno = JasperFillManager.fillReport(
+                    reporteCompilado,
+                    parametros,
+                    new JRMapCollectionDataSource(datos));
+
+            return JasperExportManager
+                    .exportReportToPdf(reporteLleno);
+
+        } catch (JRException | IOException excepcion) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No se pudo generar el reporte PDF de movimientos",
                     excepcion);
         }
     }

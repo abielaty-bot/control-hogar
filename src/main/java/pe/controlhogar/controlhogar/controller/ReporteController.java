@@ -33,6 +33,30 @@ public class ReporteController {
                 reporteService.totalPorCategoria(usuarioId, tipo));
     }
 
+    // Reporte con plantilla Jasper Studio (.jrxml), totales y grafico circular
+    @GetMapping(value = "/movimientos/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> generarReporteMovimientos(
+            @RequestParam Long usuarioId,
+            @RequestParam(defaultValue = "GASTO") String tipo) {
+
+        byte[] reportePdf =
+                reporteService.generarReporteMovimientosPdf(usuarioId, tipo);
+
+        ContentDisposition disposicion = ContentDisposition
+                .attachment()
+                .filename("reporte-movimientos-por-categoria.pdf")
+                .build();
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        disposicion.toString())
+                .contentLength(reportePdf.length)
+                .body(reportePdf);
+    }
+
     @GetMapping(value = "/usuarios/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> generarReporteUsuarios() {
 

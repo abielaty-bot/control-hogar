@@ -148,3 +148,11 @@ Siguiendo el mismo patron de Usuario y Categoria se agregaron:
 - **Cuentas** `/api/cuentas`: CRUD completo; el nombre es unico por usuario y el borrado es logico (`activo`).
 - **Presupuestos** `/api/presupuestos`: un presupuesto por usuario, anio y mes; detalle por categoria en `/api/presupuestos/{id}/detalle` (la categoria debe ser del mismo usuario).
 - **Deudas** `/api/deudas`: CRUD de deudas y pagos en `/api/deudas/{id}/pagos`. Registrar un pago descuenta el saldo pendiente y marca la deuda como PAGADA al llegar a cero; no se puede pagar mas que el saldo ni eliminar una deuda con pagos.
+
+## Reporte con Jasper Studio (Bloque 4 - Tema 9)
+
+Nuevo reporte disenado como plantilla `.jrxml` (editable en Jaspersoft Studio), en `src/main/resources/reportes/movimientos_por_categoria.jrxml`:
+
+- `GET /api/reportes/movimientos/pdf?usuarioId=1&tipo=GASTO` descarga el PDF.
+- Incluye la tabla de totales por categoria (consulta JPQL del Bloque 1), fila de **totales generales** (resumen) y un **grafico circular** con la distribucion por categoria (dependencia `jasperreports-charts`).
+- El reporte anterior de usuarios, construido por codigo Java, se mantiene como ejemplo de la otra forma de trabajar con JasperReports.
