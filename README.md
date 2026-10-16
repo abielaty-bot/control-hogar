@@ -1,4 +1,4 @@
-﻿# Control Hogar
+# Control Hogar
 
 Control Hogar es una API REST para gestionar información económica doméstica.
 
@@ -40,7 +40,8 @@ Las tablas se generan automáticamente desde las entidades Java mediante JPA e H
 ### Usuario
 
 - POST `/api/usuarios`
-- GET `/api/usuarios`
+- GET `/api/usuarios` (paginado: `?page=0&size=10&sort=nombres,asc`)
+- GET `/api/usuarios/buscar?texto={nombre}` (consulta JPQL)
 - GET `/api/usuarios/{id}`
 - PUT `/api/usuarios/{id}`
 - DELETE `/api/usuarios/{id}`
@@ -48,7 +49,7 @@ Las tablas se generan automáticamente desde las entidades Java mediante JPA e H
 ### Categoria
 
 - POST `/api/categorias`
-- GET `/api/categorias?usuarioId={id}`
+- GET `/api/categorias?usuarioId={id}` (paginado: `&page=0&size=10&sort=nombre,asc`)
 - GET `/api/categorias/{id}`
 - PUT `/api/categorias/{id}`
 - DELETE `/api/categorias/{id}`
@@ -121,3 +122,8 @@ La API quedará disponible en:
 - Autenticación mediante JWT
 - CRUD completos para las demás entidades
 - Interfaz web
+
+## Consultas JPQL y perfiles (Bloque 1)
+
+- Consulta JPQL de agregacion con DTO: `GET /api/reportes/movimientos/total-por-categoria?usuarioId={id}&tipo=GASTO` devuelve el total y la cantidad de movimientos por categoria.
+- Perfiles de Spring: `dev` (MySQL local, activo por defecto) y `prod` (variables de entorno `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, pensado para el despliegue en Render). Se elige con la variable `SPRING_PROFILES_ACTIVE`.

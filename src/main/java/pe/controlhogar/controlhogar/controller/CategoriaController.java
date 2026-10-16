@@ -1,8 +1,10 @@
 package pe.controlhogar.controlhogar.controller;
 
 import java.net.URI;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,11 +31,13 @@ public class CategoriaController {
         this.categoriaService = categoriaService;
     }
 
+    // Listado paginado: ?usuarioId=1&page=0&size=10&sort=nombre,asc
     @GetMapping
-    public ResponseEntity<List<Categoria>> listarPorUsuario(
-            @RequestParam Long usuarioId) {
+    public ResponseEntity<Page<Categoria>> listarPorUsuario(
+            @RequestParam Long usuarioId,
+            @PageableDefault(sort = "nombre") Pageable pageable) {
         return ResponseEntity.ok(
-                categoriaService.listarPorUsuario(usuarioId));
+                categoriaService.listarPorUsuario(usuarioId, pageable));
     }
 
     @GetMapping("/{id}")

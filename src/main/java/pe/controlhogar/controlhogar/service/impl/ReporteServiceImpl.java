@@ -28,7 +28,9 @@ import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import net.sf.jasperreports.engine.type.ModeEnum;
 import net.sf.jasperreports.engine.type.OrientationEnum;
 import net.sf.jasperreports.engine.type.VerticalTextAlignEnum;
+import pe.controlhogar.controlhogar.dto.TotalPorCategoriaDTO;
 import pe.controlhogar.controlhogar.entity.Usuario;
+import pe.controlhogar.controlhogar.repository.MovimientoRepository;
 import pe.controlhogar.controlhogar.repository.UsuarioRepository;
 import pe.controlhogar.controlhogar.service.ReporteService;
 
@@ -36,10 +38,20 @@ import pe.controlhogar.controlhogar.service.ReporteService;
 public class ReporteServiceImpl implements ReporteService {
 
     private final UsuarioRepository usuarioRepository;
+    private final MovimientoRepository movimientoRepository;
 
     public ReporteServiceImpl(
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            MovimientoRepository movimientoRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.movimientoRepository = movimientoRepository;
+    }
+
+    @Override
+    public List<TotalPorCategoriaDTO> totalPorCategoria(
+            Long usuarioId,
+            String tipo) {
+        return movimientoRepository.totalPorCategoria(usuarioId, tipo);
     }
 
     @Override
