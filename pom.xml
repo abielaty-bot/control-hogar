@@ -57,6 +57,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Driver PostgreSQL: permite usar la BD gratuita de Render -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- JasperReports -->
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
@@ -110,4 +117,20 @@
         </plugins>
     </build>
 
+
+    <!-- Repositorios de Jaspersoft: jasperreports-pdf usa una version de
+         OpenPDF que no esta en Maven Central; sin esto la compilacion
+         limpia (por ejemplo en Docker/Render) falla -->
+    <repositories>
+        <repository>
+            <id>jaspersoft-ce-releases</id>
+            <name>Jaspersoft CE Releases</name>
+            <url>https://jaspersoft.jfrog.io/artifactory/jr-ce-releases</url>
+        </repository>
+        <repository>
+            <id>jaspersoft-third-party</id>
+            <name>Jaspersoft Third Party</name>
+            <url>https://jaspersoft.jfrog.io/artifactory/third-party-ce-artifacts</url>
+        </repository>
+    </repositories>
 </project>

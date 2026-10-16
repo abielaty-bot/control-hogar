@@ -156,3 +156,20 @@ Nuevo reporte disenado como plantilla `.jrxml` (editable en Jaspersoft Studio), 
 - `GET /api/reportes/movimientos/pdf?usuarioId=1&tipo=GASTO` descarga el PDF.
 - Incluye la tabla de totales por categoria (consulta JPQL del Bloque 1), fila de **totales generales** (resumen) y un **grafico circular** con la distribucion por categoria (dependencia `jasperreports-charts`).
 - El reporte anterior de usuarios, construido por codigo Java, se mantiene como ejemplo de la otra forma de trabajar con JasperReports.
+
+## Despliegue en Render (Bloque 5 - Tema 10)
+
+El silabo pedia Heroku, pero Heroku exige tarjeta; se despliega en **Render** (gratis, sin tarjeta) usando Docker:
+
+1. En [render.com](https://render.com): **New + Web Service**, conectar el repositorio de GitHub y elegir la rama `completar-silabo`. Render detecta el `Dockerfile` (o usar el `render.yaml` como Blueprint).
+2. Crear la base de datos. Dos opciones:
+   - **PostgreSQL de Render (recomendado, todo en un solo lugar):** New + PostgreSQL (plan Free). En su panel, seccion Connections, tomar Host, Port, Database, Username y Password.
+   - **MySQL externo** (Clever Cloud, TiDB Cloud, etc.): crear la BD y tomar sus datos de conexion.
+3. Variables de entorno del servicio web:
+   - `SPRING_PROFILES_ACTIVE` = `prod`
+   - `DB_URL` = `jdbc:postgresql://<host>:<port>/<database>` (o `jdbc:mysql://<host>:<port>/<database>` si es MySQL)
+   - `DB_USERNAME` y `DB_PASSWORD` segun la BD creada
+   - `DB_DRIVER` = `org.postgresql.Driver` (para MySQL no hace falta: el valor por defecto es el de MySQL)
+4. **Create Web Service** y esperar el primer despliegue (compila con el Dockerfile). La app queda en `https://control-hogar.onrender.com` (el nombre puede variar).
+
+Notas: el plan gratuito duerme el servicio tras 15 minutos sin uso y despierta en ~1 minuto. Las tablas se crean solas al arrancar (`ddl-auto=update`), pero la BD arranca vacia: registrar un usuario nuevo con `POST /api/usuarios`. Ademas, el `pom.xml` declara los repositorios de Jaspersoft porque `jasperreports-pdf` usa una version de OpenPDF que no esta en Maven Central; sin eso, cualquier compilacion limpia (como la de Docker) falla.
