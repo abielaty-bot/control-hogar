@@ -3,7 +3,10 @@ package pe.controlhogar.controlhogar.repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -65,4 +68,11 @@ public interface MovimientoRepository
     BigDecimal sumarPorUsuarioYTipo(
             @Param("usuarioId") Long usuarioId,
             @Param("tipo") String tipo);
+
+    // CRUD de movimientos: solo los vigentes (eliminadoEn es nulo)
+    Page<Movimiento> findByUsuarioIdAndEliminadoEnIsNull(
+            Long usuarioId,
+            Pageable pageable);
+
+    Optional<Movimiento> findByIdAndEliminadoEnIsNull(Long id);
 }

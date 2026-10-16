@@ -139,3 +139,12 @@ La API esta protegida con Spring Security y autenticacion HTTP Basic:
 - Administrador en memoria: usuario `admin`, contrasena `admin123`, rol ADMIN.
 
 Nota: los usuarios creados antes de este bloque tienen su contrasena sin cifrar y no podran autenticarse; hay que volver a registrarlos o actualizar su contrasena.
+
+## CRUD del Bloque 3
+
+Siguiendo el mismo patron de Usuario y Categoria se agregaron:
+
+- **Movimientos** `/api/movimientos`: CRUD completo con borrado logico (campo `eliminadoEn`). Listado paginado por usuario.
+- **Cuentas** `/api/cuentas`: CRUD completo; el nombre es unico por usuario y el borrado es logico (`activo`).
+- **Presupuestos** `/api/presupuestos`: un presupuesto por usuario, anio y mes; detalle por categoria en `/api/presupuestos/{id}/detalle` (la categoria debe ser del mismo usuario).
+- **Deudas** `/api/deudas`: CRUD de deudas y pagos en `/api/deudas/{id}/pagos`. Registrar un pago descuenta el saldo pendiente y marca la deuda como PAGADA al llegar a cero; no se puede pagar mas que el saldo ni eliminar una deuda con pagos.
