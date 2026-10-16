@@ -127,3 +127,15 @@ La API quedará disponible en:
 
 - Consulta JPQL de agregacion con DTO: `GET /api/reportes/movimientos/total-por-categoria?usuarioId={id}&tipo=GASTO` devuelve el total y la cantidad de movimientos por categoria.
 - Perfiles de Spring: `dev` (MySQL local, activo por defecto) y `prod` (variables de entorno `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, pensado para el despliegue en Render). Se elige con la variable `SPRING_PROFILES_ACTIVE`.
+
+## Seguridad con Spring Security (Bloque 2 - Tema 7)
+
+La API esta protegida con Spring Security y autenticacion HTTP Basic:
+
+- Registro publico: `POST /api/usuarios` (no requiere autenticacion).
+- Todo lo demas requiere enviar el correo y la contrasena del usuario (Basic Auth, por ejemplo en Thunder Client, pestana Auth -> Basic).
+- Las contrasenas se guardan cifradas con **BCrypt** en la columna `password_hash`.
+- La autenticacion es personalizada: se valida contra la tabla `usuario` (clase `UsuarioDetailsService`); los usuarios inactivos no pueden ingresar.
+- Administrador en memoria: usuario `admin`, contrasena `admin123`, rol ADMIN.
+
+Nota: los usuarios creados antes de este bloque tienen su contrasena sin cifrar y no podran autenticarse; hay que volver a registrarlos o actualizar su contrasena.
