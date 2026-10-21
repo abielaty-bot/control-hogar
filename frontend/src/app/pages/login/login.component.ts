@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { AuthService } from '../../core/auth.service';
 import { mensajeDeError } from '../../core/util';
@@ -9,7 +9,7 @@ import { mensajeDeError } from '../../core/util';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="login-fondo">
       <form class="tarjeta login" (ngSubmit)="ingresar()">
@@ -17,6 +17,7 @@ import { mensajeDeError } from '../../core/util';
         <p class="sub">Ingresa con tu correo y contraseña</p>
 
         <div class="error" *ngIf="error">{{ error }}</div>
+        <div class="ok" *ngIf="mensajeOk">{{ mensajeOk }}</div>
 
         <label for="correo">Correo</label>
         <input id="correo" type="email" [(ngModel)]="correo" name="correo"
@@ -31,8 +32,7 @@ import { mensajeDeError } from '../../core/util';
         </button>
 
         <p class="nota">
-          ¿Aún no tienes cuenta? Regístrate desde la API con
-          <code>POST /api/usuarios</code> (por ejemplo, en Thunder Client).
+          ¿Aún no tienes cuenta? <a routerLink="/registro">Regístrate aquí</a>
         </p>
       </form>
     </div>
@@ -68,11 +68,20 @@ export class LoginComponent {
 
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   correo = '';
   contrasena = '';
   error = '';
+  mensajeOk = '';
   cargando = false;
+
+  constructor() {
+    // Mensaje de exito al volver desde la pantalla de registro.
+    if (this.route.snapshot.queryParamMap.get('registrado') === '1') {
+      this.mensajeOk = '✅ Cuenta creada. Ingresa con tu correo y contraseña.';
+    }
+  }
 
   ingresar(): void {
     this.error = '';

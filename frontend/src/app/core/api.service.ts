@@ -12,7 +12,8 @@ import {
   PagoDeuda,
   PresupuestoCategoria,
   PresupuestoMensual,
-  TotalPorCategoria
+  TotalPorCategoria,
+  Usuario
 } from './models';
 
 // Servicio unico de acceso a la API REST de Control Hogar.
@@ -22,6 +23,13 @@ export class ApiService {
 
   private http = inject(HttpClient);
   private base = environment.apiUrl;
+
+  // ===== Usuarios =====
+
+  // Registro publico (POST /api/usuarios no requiere autenticacion).
+  registrarUsuario(cuerpo: unknown): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.base}/usuarios`, cuerpo);
+  }
 
   // ===== Categorias =====
 

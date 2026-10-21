@@ -70,12 +70,14 @@ public class SecurityConfig {
     }
 
     // CORS: permite que el frontend Angular (puerto 4200) consuma la API.
-    // Al desplegar el frontend, agregar su URL a los origenes permitidos.
+    // Origenes permitidos: el frontend local (ng serve) y el sitio web
+    // del frontend publicado en Render.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracion = new CorsConfiguration();
         configuracion.setAllowedOrigins(List.of(
-                "http://localhost:4200"));
+                "http://localhost:4200",
+                "https://control-hogar-web.onrender.com"));
         configuracion.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuracion.setAllowedHeaders(List.of("*"));
