@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport name="MovimientosPorCategoria" pageWidth="595" pageHeight="842" columnWidth="515" leftMargin="40" rightMargin="40" topMargin="30" bottomMargin="30" whenNoDataType="AllSectionsNoDetail" uuid="5a12f3ff-95a1-4d51-b638-d4d79659e32a">
+	<style name="Normal" default="true" fontName="DejaVu Sans" fontSize="10.0"/>
+	<style name="Negrita" fontName="DejaVu Sans" fontSize="10.0" bold="true"/>
+	<style name="Titulo" fontName="DejaVu Sans" fontSize="16.0" bold="true"/>
+	<parameter name="NOMBRE_USUARIO" class="java.lang.String"/>
+	<parameter name="TIPO_MOVIMIENTO" class="java.lang.String"/>
+	<parameter name="GENERADO_EN" class="java.lang.String"/>
+	<field name="categoria" class="java.lang.String"/>
+	<field name="cantidad" class="java.lang.Long"/>
+	<field name="total" class="java.math.BigDecimal"/>
+	<variable name="TotalGeneral" calculation="Sum" class="java.math.BigDecimal">
+		<expression><![CDATA[$F{total}]]></expression>
+	</variable>
+	<variable name="CantidadTotal" calculation="Sum" class="java.lang.Long">
+		<expression><![CDATA[$F{cantidad}]]></expression>
+	</variable>
+	<title height="52">
+		<element kind="staticText" uuid="40dde745-33f2-4364-b0d0-9119d636c99b" x="0" y="0" width="515" height="24" hTextAlign="Center" style="Titulo">
+			<text><![CDATA[Movimientos por categoría]]></text>
+		</element>
+		<element kind="textField" uuid="dcc4da1a-d8f9-4741-bbf8-248bbd02dcb6" x="0" y="28" width="515" height="14" hTextAlign="Center">
+			<expression><![CDATA["Usuario: " + $P{NOMBRE_USUARIO} + "  |  Tipo: " + $P{TIPO_MOVIMIENTO} + "  |  Generado: " + $P{GENERADO_EN}]]></expression>
+		</element>
+	</title>
+	<columnHeader height="20">
+		<element kind="rectangle" uuid="4a28e77d-5896-4bd2-af7a-815de9c1d283" x="0" y="0" width="515" height="20" backcolor="#4472C4"/>
+		<element kind="staticText" uuid="0d1d4fa4-6654-4e98-a622-7f4fc58d506a" mode="Opaque" x="5" y="3" width="285" height="14" forecolor="#FFFFFF" backcolor="#4472C4" style="Negrita">
+			<text><![CDATA[Categoría]]></text>
+		</element>
+		<element kind="staticText" uuid="6ba24d8d-838c-4e3f-a537-4f052af9b6fd" mode="Opaque" x="300" y="3" width="90" height="14" forecolor="#FFFFFF" backcolor="#4472C4" hTextAlign="Center" style="Negrita">
+			<text><![CDATA[Movimientos]]></text>
+		</element>
+		<element kind="staticText" uuid="dd3af645-ced5-4cf7-9df7-b2386884e244" mode="Opaque" x="400" y="3" width="110" height="14" forecolor="#FFFFFF" backcolor="#4472C4" hTextAlign="Right" style="Negrita">
+			<text><![CDATA[Total (S/)]]></text>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="16">
+			<element kind="textField" uuid="89da3d10-4629-4002-9672-c7992c19f17d" x="5" y="2" width="285" height="12" blankWhenNull="true">
+				<expression><![CDATA[$F{categoria}]]></expression>
+			</element>
+			<element kind="textField" uuid="bc04ea6d-e630-4ce7-9d31-3865a09612cf" x="300" y="2" width="90" height="12" hTextAlign="Center" blankWhenNull="true">
+				<expression><![CDATA[$F{cantidad}]]></expression>
+			</element>
+			<element kind="textField" uuid="0f821864-188c-4426-aa27-ea2bbec672ba" x="400" y="2" width="110" height="12" pattern="#,##0.00" hTextAlign="Right" blankWhenNull="true">
+				<expression><![CDATA[$F{total}]]></expression>
+			</element>
+			<element kind="line" uuid="f7152798-1cb4-45c3-a180-a578aef05d07" x="0" y="15" width="515" height="1" forecolor="#D9D9D9">
+				<pen lineWidth="0.5"/>
+			</element>
+		</band>
+	</detail>
+	<summary height="330">
+		<element kind="rectangle" uuid="9f3989f9-f1d2-4776-b7fc-924ecd5df3e3" x="0" y="0" width="515" height="20" backcolor="#D9E2F3"/>
+		<element kind="staticText" uuid="aefe2858-45a5-40cf-aaa1-af57535ca044" mode="Opaque" x="5" y="3" width="285" height="14" backcolor="#D9E2F3" style="Negrita">
+			<text><![CDATA[TOTAL GENERAL]]></text>
+		</element>
+		<element kind="textField" uuid="2686b661-1a6a-4d46-a24d-b34a837c511f" mode="Opaque" x="300" y="3" width="90" height="14" backcolor="#D9E2F3" hTextAlign="Center" style="Negrita">
+			<expression><![CDATA[$V{CantidadTotal}]]></expression>
+		</element>
+		<element kind="textField" uuid="a1e4d745-7f1d-479c-9128-ba4d3636886c" mode="Opaque" x="400" y="3" width="110" height="14" backcolor="#D9E2F3" pattern="#,##0.00" hTextAlign="Right" style="Negrita">
+			<expression><![CDATA[$V{TotalGeneral}]]></expression>
+		</element>
+		<element kind="staticText" uuid="882cbef2-10ee-4e7d-8aec-31eb3c29539c" x="0" y="32" width="515" height="16" fontSize="12.0" style="Negrita">
+			<text><![CDATA[Distribución por categoría]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="52ad04a7-cdd4-4e38-b684-1b3406908e6a" x="57" y="55" width="400" height="260" evaluationTime="Report">
+			<dataset kind="pie">
+				<series>
+					<keyExpression><![CDATA[$F{categoria}]]></keyExpression>
+					<valueExpression><![CDATA[$F{total}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot labelFormat="{0} {2}" legendLabelFormat="{0}">
+				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+			</plot>
+		</element>
+	</summary>
+	<pageFooter height="20">
+		<element kind="textField" uuid="fa6cf079-c01b-43e0-8123-309a692722f4" x="207" y="4" width="100" height="12" hTextAlign="Center">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
+</jasperReport>

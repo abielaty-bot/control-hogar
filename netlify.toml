@@ -1,0 +1,13 @@
+# Despliegue del frontend Angular en Netlify.
+# Netlify lee este archivo y configura el sitio sin ajustes manuales.
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist/control-hogar-frontend/browser"
+
+# La SPA usa rutas del navegador (ej. /login, /inicio): toda ruta
+# debe devolver index.html para que Angular se encargue.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

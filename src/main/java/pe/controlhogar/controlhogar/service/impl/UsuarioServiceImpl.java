@@ -2,7 +2,10 @@ package pe.controlhogar.controlhogar.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -14,14 +17,23 @@ import pe.controlhogar.controlhogar.service.UsuarioService;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository) {
+    public UsuarioServiceImpl(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public List<Usuario> listar() {
-        return usuarioRepository.findByActivoTrueOrderByNombresAsc();
+    public Page<Usuario> listar(Pageable pageable) {
+        return usuarioRepository.findByActivoTrue(pageable);
+    }
+
+    @Override
+    public List<Usuario> buscarPorNombres(String texto) {
+        return usuarioRepository.buscarPorNombres(texto);
     }
 
     @Override
@@ -44,6 +56,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario.setId(null);
         usuario.setActivo(true);
+
+        // La contrasena nunca se guarda en texto plano: se cifra con BCrypt
+        usuario.setPasswordHash(
+                passwordEncoder.encode(usuario.getPasswordHash()));
 
         return usuarioRepository.save(usuario);
     }
@@ -70,7 +86,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         if (datos.getPasswordHash() != null
                 && !datos.getPasswordHash().isBlank()) {
-            usuarioActual.setPasswordHash(datos.getPasswordHash());
+            usuarioActual.setPasswordHash(
+                    passwordEncoder.encode(datos.getPasswordHash()));
         }
 
         return usuarioRepository.save(usuarioActual);

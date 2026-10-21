@@ -1,4 +1,4 @@
-﻿# Control Hogar
+# Control Hogar
 
 Control Hogar es una API REST para gestionar información económica doméstica.
 
@@ -40,7 +40,8 @@ Las tablas se generan automáticamente desde las entidades Java mediante JPA e H
 ### Usuario
 
 - POST `/api/usuarios`
-- GET `/api/usuarios`
+- GET `/api/usuarios` (paginado: `?page=0&size=10&sort=nombres,asc`)
+- GET `/api/usuarios/buscar?texto={nombre}` (consulta JPQL)
 - GET `/api/usuarios/{id}`
 - PUT `/api/usuarios/{id}`
 - DELETE `/api/usuarios/{id}`
@@ -48,7 +49,7 @@ Las tablas se generan automáticamente desde las entidades Java mediante JPA e H
 ### Categoria
 
 - POST `/api/categorias`
-- GET `/api/categorias?usuarioId={id}`
+- GET `/api/categorias?usuarioId={id}` (paginado: `&page=0&size=10&sort=nombre,asc`)
 - GET `/api/categorias/{id}`
 - PUT `/api/categorias/{id}`
 - DELETE `/api/categorias/{id}`
@@ -121,3 +122,72 @@ La API quedará disponible en:
 - Autenticación mediante JWT
 - CRUD completos para las demás entidades
 - Interfaz web
+
+## Consultas JPQL y perfiles (Bloque 1)
+
+- Consulta JPQL de agregacion con DTO: `GET /api/reportes/movimientos/total-por-categoria?usuarioId={id}&tipo=GASTO` devuelve el total y la cantidad de movimientos por categoria.
+- Perfiles de Spring: `dev` (MySQL local, activo por defecto) y `prod` (variables de entorno `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, pensado para el despliegue en Render). Se elige con la variable `SPRING_PROFILES_ACTIVE`.
+
+## Seguridad con Spring Security (Bloque 2 - Tema 7)
+
+La API esta protegida con Spring Security y autenticacion HTTP Basic:
+
+- Registro publico: `POST /api/usuarios` (no requiere autenticacion).
+- Todo lo demas requiere enviar el correo y la contrasena del usuario (Basic Auth, por ejemplo en Thunder Client, pestana Auth -> Basic).
+- Las contrasenas se guardan cifradas con **BCrypt** en la columna `password_hash`.
+- La autenticacion es personalizada: se valida contra la tabla `usuario` (clase `UsuarioDetailsService`); los usuarios inactivos no pueden ingresar.
+- Administrador en memoria: usuario `admin`, contrasena `admin123`, rol ADMIN.
+
+Nota: los usuarios creados antes de este bloque tienen su contrasena sin cifrar y no podran autenticarse; hay que volver a registrarlos o actualizar su contrasena.
+
+## CRUD del Bloque 3
+
+Siguiendo el mismo patron de Usuario y Categoria se agregaron:
+
+- **Movimientos** `/api/movimientos`: CRUD completo con borrado logico (campo `eliminadoEn`). Listado paginado por usuario.
+- **Cuentas** `/api/cuentas`: CRUD completo; el nombre es unico por usuario y el borrado es logico (`activo`).
+- **Presupuestos** `/api/presupuestos`: un presupuesto por usuario, anio y mes; detalle por categoria en `/api/presupuestos/{id}/detalle` (la categoria debe ser del mismo usuario).
+- **Deudas** `/api/deudas`: CRUD de deudas y pagos en `/api/deudas/{id}/pagos`. Registrar un pago descuenta el saldo pendiente y marca la deuda como PAGADA al llegar a cero; no se puede pagar mas que el saldo ni eliminar una deuda con pagos.
+
+## Reporte con Jasper Studio (Bloque 4 - Tema 9)
+
+Nuevo reporte disenado como plantilla `.jrxml` (editable en Jaspersoft Studio), en `src/main/resources/reportes/movimientos_por_categoria.jrxml`:
+
+- `GET /api/reportes/movimientos/pdf?usuarioId=1&tipo=GASTO` descarga el PDF.
+- Incluye la tabla de totales por categoria (consulta JPQL del Bloque 1), fila de **totales generales** (resumen) y un **grafico circular** con la distribucion por categoria (dependencia `jasperreports-charts`).
+- El reporte anterior de usuarios, construido por codigo Java, se mantiene como ejemplo de la otra forma de trabajar con JasperReports.
+
+## Despliegue en Render (Bloque 5 - Tema 10)
+
+El silabo pedia Heroku, pero Heroku exige tarjeta; se despliega en **Render** (gratis, sin tarjeta) usando Docker:
+
+1. En [render.com](https://render.com): **New + Web Service**, conectar el repositorio de GitHub y elegir la rama `completar-silabo`. Render detecta el `Dockerfile` (o usar el `render.yaml` como Blueprint).
+2. Crear la base de datos. Dos opciones:
+   - **PostgreSQL de Render (recomendado, todo en un solo lugar):** New + PostgreSQL (plan Free). En su panel, seccion Connections, tomar Host, Port, Database, Username y Password.
+   - **MySQL externo** (Clever Cloud, TiDB Cloud, etc.): crear la BD y tomar sus datos de conexion.
+3. Variables de entorno del servicio web:
+   - `SPRING_PROFILES_ACTIVE` = `prod`
+   - `DB_URL` = `jdbc:postgresql://<host>:<port>/<database>` (o `jdbc:mysql://<host>:<port>/<database>` si es MySQL)
+   - `DB_USERNAME` y `DB_PASSWORD` segun la BD creada
+   - `DB_DRIVER` = `org.postgresql.Driver` (para MySQL no hace falta: el valor por defecto es el de MySQL)
+4. **Create Web Service** y esperar el primer despliegue (compila con el Dockerfile). La app queda en `https://control-hogar.onrender.com` (el nombre puede variar).
+
+Notas: el plan gratuito duerme el servicio tras 15 minutos sin uso y despierta en ~1 minuto. Las tablas se crean solas al arrancar (`ddl-auto=update`), pero la BD arranca vacia: registrar un usuario nuevo con `POST /api/usuarios`. Ademas, el `pom.xml` declara los repositorios de Jaspersoft porque `jasperreports-pdf` usa una version de OpenPDF que no esta en Maven Central; sin eso, cualquier compilacion limpia (como la de Docker) falla.
+
+## Frontend Angular (Bloque 6 - Temas 11 y 12)
+
+SPA en Angular (componentes standalone) dentro de la carpeta `frontend/`, que consume la API REST:
+
+- **Login** con el correo y la contrasena del usuario (HTTP Basic contra Spring Security), guard de rutas e **interceptor** que agrega el encabezado `Authorization` a cada peticion.
+- **Paginas**: Inicio (tarjetas de ingresos/gastos/balance y recientes), Movimientos (con paginacion), Categorias, Cuentas, Presupuestos (con su detalle por categoria), Deudas (con registro de pagos) y Reportes (totales por categoria y descarga del PDF de Jasper).
+- El backend habilito **CORS** para `http://localhost:4200` en `SecurityConfig`.
+
+Para ejecutarlo (requiere Node.js 20+):
+
+```
+cd frontend
+npm install
+npm start
+```
+
+y abrir `http://localhost:4200` con el backend corriendo en el puerto 8080. La URL de la API se configura en `frontend/src/environments/environment.ts` (desarrollo) y `environment.prod.ts` (produccion, con la URL de Render del Bloque 5).

@@ -2,6 +2,8 @@ package pe.controlhogar.controlhogar.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,11 +28,13 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public List<Categoria> listarPorUsuario(Long usuarioId) {
+    public Page<Categoria> listarPorUsuario(
+            Long usuarioId,
+            Pageable pageable) {
         buscarUsuarioActivo(usuarioId);
 
         return categoriaRepository
-                .findByUsuarioIdAndActivoTrueOrderByNombreAsc(usuarioId);
+                .findByUsuarioIdAndActivoTrue(usuarioId, pageable);
     }
 
     @Override
