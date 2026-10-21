@@ -85,6 +85,16 @@
             <version>${jasperreports.version}</version>
         </dependency>
 
+        <!-- Compilador de expresiones de los reportes basado en Eclipse
+             JDT: permite compilar las plantillas en tiempo de ejecucion
+             cuando solo hay un JRE (sin JDK), como en el contenedor de
+             Render; sin esto los PDF devuelven error 500 en produccion -->
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-jdt</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+
         <!-- Pruebas de JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

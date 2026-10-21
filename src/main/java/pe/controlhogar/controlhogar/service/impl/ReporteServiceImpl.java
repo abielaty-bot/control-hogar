@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,9 @@ import pe.controlhogar.controlhogar.service.ReporteService;
 
 @Service
 public class ReporteServiceImpl implements ReporteService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(ReporteServiceImpl.class);
 
     private final UsuarioRepository usuarioRepository;
     private final MovimientoRepository movimientoRepository;
@@ -85,6 +90,8 @@ public class ReporteServiceImpl implements ReporteService {
                     .exportReportToPdf(reporteLleno);
 
         } catch (JRException excepcion) {
+            log.error("Error al generar el reporte PDF de usuarios",
+                    excepcion);
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "No se pudo generar el reporte PDF de usuarios",
@@ -145,6 +152,9 @@ public class ReporteServiceImpl implements ReporteService {
                     .exportReportToPdf(reporteLleno);
 
         } catch (JRException | IOException excepcion) {
+            log.error("Error al generar el reporte PDF de movimientos "
+                    + "(usuarioId={}, tipo={})", usuarioId, tipo,
+                    excepcion);
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "No se pudo generar el reporte PDF de movimientos",
