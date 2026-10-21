@@ -69,15 +69,17 @@ public class SecurityConfig {
         return new ProviderManager(List.of(baseDatos, memoria));
     }
 
-    // CORS: permite que el frontend Angular (puerto 4200) consuma la API.
-    // Origenes permitidos: el frontend local (ng serve) y el sitio web
-    // del frontend publicado en Render.
+    // CORS: permite que el frontend Angular consuma la API.
+    // Origenes permitidos: el frontend local (ng serve), el sitio web
+    // publicado en Render y cualquier subdominio de Netlify.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracion = new CorsConfiguration();
         configuracion.setAllowedOrigins(List.of(
                 "http://localhost:4200",
                 "https://control-hogar-web.onrender.com"));
+        configuracion.setAllowedOriginPatterns(List.of(
+                "https://*.netlify.app"));
         configuracion.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuracion.setAllowedHeaders(List.of("*"));
