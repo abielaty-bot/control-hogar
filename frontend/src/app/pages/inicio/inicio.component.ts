@@ -39,15 +39,15 @@ interface Delta {
       </div>
       <div class="heroe-cifras">
         <div class="mini">
-          <div class="mini-monto">{{ formato(balanceMes) }}</div>
+          <div class="mini-monto">{{ formato(vista.balance) }}</div>
           <div class="mini-rotulo">Balance del mes</div>
         </div>
         <div class="mini">
-          <div class="mini-monto">{{ formato(ingresosMes) }}</div>
+          <div class="mini-monto">{{ formato(vista.ingresos) }}</div>
           <div class="mini-rotulo">Ingresos</div>
         </div>
         <div class="mini">
-          <div class="mini-monto">{{ formato(gastosMes) }}</div>
+          <div class="mini-monto">{{ formato(vista.gastos) }}</div>
           <div class="mini-rotulo">Gastos</div>
         </div>
       </div>
@@ -67,11 +67,12 @@ interface Delta {
           </div>
           <span class="pastilla sube" *ngIf="deltaIngresos">▲ {{ deltaIngresos.pct }}%</span>
         </div>
-        <div class="kpi-monto">{{ formato(ingresosMes) }}</div>
+        <div class="kpi-monto">{{ formato(vista.ingresos) }}</div>
         <div class="kpi-rotulo">Ingresos del mes</div>
         <div class="barritas">
-          <span *ngFor="let b of barrasIngresos; let u = last"
-                [style.height.%]="b" [class.actual]="u"></span>
+          <span *ngFor="let b of barrasIngresos; let u = last; let j = index"
+                [style.height.%]="b" [class.actual]="u"
+                [title]="serie[j].etiqueta + ': ' + formato(serie[j].ingresos)"></span>
         </div>
       </div>
 
@@ -85,11 +86,12 @@ interface Delta {
             {{ deltaGastos.sube ? '▲' : '▼' }} {{ deltaGastos.pct }}%
           </span>
         </div>
-        <div class="kpi-monto">{{ formato(gastosMes) }}</div>
+        <div class="kpi-monto">{{ formato(vista.gastos) }}</div>
         <div class="kpi-rotulo">Gastos del mes</div>
         <div class="barritas rosa">
-          <span *ngFor="let b of barrasGastos; let u = last"
-                [style.height.%]="b" [class.actual]="u"></span>
+          <span *ngFor="let b of barrasGastos; let u = last; let j = index"
+                [style.height.%]="b" [class.actual]="u"
+                [title]="serie[j].etiqueta + ': ' + formato(serie[j].gastos)"></span>
         </div>
       </div>
 
@@ -103,7 +105,7 @@ interface Delta {
             {{ deltaBalance.sube ? '▲' : '▼' }} {{ deltaBalance.pct }}%
           </span>
         </div>
-        <div class="kpi-monto">{{ formato(balanceMes) }}</div>
+        <div class="kpi-monto">{{ formato(vista.balance) }}</div>
         <div class="kpi-rotulo">Balance del mes</div>
         <div class="kpi-nota">Ingresos menos gastos de {{ mesActualTexto }}.</div>
       </div>
@@ -115,7 +117,7 @@ interface Delta {
           </div>
           <span class="pastilla neutra" *ngIf="deudasActivas">{{ deudasActivas }} activa{{ deudasActivas === 1 ? '' : 's' }}</span>
         </div>
-        <div class="kpi-monto">{{ formato(deudasPendientes) }}</div>
+        <div class="kpi-monto">{{ formato(vista.deudas) }}</div>
         <div class="kpi-rotulo">Deudas pendientes</div>
         <div class="kpi-nota" *ngIf="proximoVencimiento">Vencimiento más cercano: {{ proximoVencimiento }}</div>
         <div class="kpi-nota" *ngIf="!proximoVencimiento">Sin deudas por pagar. 🎉</div>
@@ -136,7 +138,7 @@ interface Delta {
           </div>
         </div>
 
-        <svg *ngIf="hayDatosGrafico" class="lienzo" viewBox="0 0 640 240" preserveAspectRatio="none" role="img">
+        <div class="envoltura"><svg *ngIf="hayDatosGrafico" class="lienzo" viewBox="0 0 640 240" preserveAspectRatio="none" role="img">
           <g class="rejilla">
             <line *ngFor="let n of niveles" [attr.x1]="46" [attr.x2]="630"
                   [attr.y1]="yDe(n)" [attr.y2]="yDe(n)"></line>
@@ -149,9 +151,26 @@ interface Delta {
           <g *ngFor="let p of puntosGastosLista">
             <circle class="pto-gas" [attr.cx]="p.x" [attr.cy]="p.y" r="3.5"></circle>
           </g>
+          <g *ngFor="let p of puntosIngresosLista; let i = index">
+            <rect [attr.x]="p.x - 58" y="0" width="117" height="240"
+                  fill="#ffffff" fill-opacity="0" class="banda"
+                  (mouseenter)="alPasar(i)" (mouseleave)="activo = null"></rect>
+          </g>
+          <g *ngIf="activo">
+            <line class="guia-v" [attr.x1]="activo.x" [attr.x2]="activo.x" y1="8" y2="214"></line>
+            <circle class="pto-activo pto-a-ing" [attr.cx]="activo.x" [attr.cy]="activo.yi" r="5.5"></circle>
+            <circle class="pto-activo pto-a-gas" [attr.cx]="activo.x" [attr.cy]="activo.yg" r="5.5"></circle>
+          </g>
         </svg>
+        <div class="tooltip-grafico" *ngIf="activo"
+             [style.left.%]="activo.x / 6.4" [style.transform]="transformTooltip(activo.i)">
+          <strong>{{ serie[activo.i].etiqueta }}</strong>
+          <span class="tt-ing">Ingresos {{ formato(serie[activo.i].ingresos) }}</span>
+          <span class="tt-gas">Gastos {{ formato(serie[activo.i].gastos) }}</span>
+        </div>
         <div class="ejes" *ngIf="hayDatosGrafico">
           <span *ngFor="let m of serie">{{ m.etiqueta }}</span>
+        </div>
         </div>
         <p class="vacio" *ngIf="!hayDatosGrafico">
           Todavía no hay movimientos para graficar. Registra el primero y aquí verás tu tendencia.
@@ -164,12 +183,28 @@ interface Delta {
         <div class="rosca" *ngIf="presupuestoPct !== null">
           <svg viewBox="0 0 140 140">
             <circle class="rosca-fondo" cx="70" cy="70" r="56"></circle>
+            <circle class="rosca-resto" cx="70" cy="70" r="56"
+                    [style.stroke-dasharray]="roscaRestoTrazo" [style.stroke-dashoffset]="roscaRestoOffset"
+                    [style.stroke-width]="hoverRosca === 'libre' ? 16 : 13"
+                    (mouseenter)="hoverRosca = 'libre'" (mouseleave)="hoverRosca = null"></circle>
             <circle class="rosca-valor" cx="70" cy="70" r="56"
-                    [style.stroke-dasharray]="roscaTrazo"></circle>
+                    [style.stroke-dasharray]="roscaTrazo"
+                    [style.stroke-width]="hoverRosca === 'gastado' ? 16 : 13"
+                    (mouseenter)="hoverRosca = 'gastado'" (mouseleave)="hoverRosca = null"></circle>
           </svg>
           <div class="rosca-centro">
-            <div class="rosca-pct">{{ presupuestoPct }}%</div>
-            <div class="rosca-rotulo">del presupuesto</div>
+            <ng-container *ngIf="hoverRosca === 'gastado'">
+              <div class="rosca-pct monto">{{ formato(gastosMes) }}</div>
+              <div class="rosca-rotulo">gastado</div>
+            </ng-container>
+            <ng-container *ngIf="hoverRosca === 'libre'">
+              <div class="rosca-pct monto">{{ formato(restantePresupuesto()) }}</div>
+              <div class="rosca-rotulo">te queda</div>
+            </ng-container>
+            <ng-container *ngIf="!hoverRosca">
+              <div class="rosca-pct">{{ presupuestoPct }}%</div>
+              <div class="rosca-rotulo">del presupuesto</div>
+            </ng-container>
           </div>
         </div>
         <p class="medidor-detalle" *ngIf="presupuestoPct !== null">
@@ -194,7 +229,7 @@ interface Delta {
               <span class="categoria-monto">{{ formato(t.total) }} · {{ pctDelTotal(t) }}%</span>
             </div>
             <div class="barra">
-              <div class="barra-relleno" [style.width.%]="anchoBarra(t)"
+              <div class="barra-relleno" [style.--w]="anchoBarra(t) + '%'"
                    [style.background]="colorCategoria(i)"></div>
             </div>
           </div>
@@ -646,6 +681,104 @@ interface Delta {
       border: 1px solid var(--borde);
     }
 
+    /* ===== Interactividad (Bloque 10) ===== */
+    .kpi-tarjeta, .grafico, .medidor {
+      transition: translate 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .kpi-tarjeta:hover, .grafico:hover, .medidor:hover {
+      translate: 0 -3px;
+      border-color: rgba(168, 85, 247, 0.5);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.4);
+    }
+
+    .envoltura { position: relative; }
+
+    .banda { cursor: crosshair; }
+
+    .guia-v {
+      stroke: rgba(255, 255, 255, 0.35);
+      stroke-width: 1;
+      stroke-dasharray: 3 4;
+      pointer-events: none;
+    }
+
+    .pto-activo {
+      stroke: #fff;
+      stroke-width: 2;
+      pointer-events: none;
+    }
+
+    .pto-a-ing { fill: #c084fc; }
+    .pto-a-gas { fill: #fb7185; }
+
+    .tooltip-grafico {
+      position: absolute;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: #150a2e;
+      border: 1px solid rgba(168, 85, 247, 0.55);
+      border-radius: 10px;
+      padding: 7px 10px;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .tooltip-grafico strong { font-size: 12px; text-transform: capitalize; }
+    .tooltip-grafico span { font-size: 11.5px; }
+    .tt-ing { color: #c084fc; }
+    .tt-gas { color: #fda4af; }
+
+    .barritas span {
+      transition: filter 0.15s ease, transform 0.15s ease;
+      transform-origin: bottom;
+      cursor: pointer;
+    }
+
+    .barritas span:hover { filter: brightness(1.6); transform: scaleY(1.06); }
+
+    .barra-relleno {
+      width: var(--w, 0%);
+      animation: crece 0.9s cubic-bezier(0.22, 0.8, 0.36, 1) both;
+    }
+
+    @keyframes crece { from { width: 0; } }
+
+    .categoria-fila {
+      border-radius: 10px;
+      padding: 6px 8px;
+      margin: 0 -8px 9px;
+      transition: background 0.15s ease;
+    }
+
+    .categoria-fila:hover { background: rgba(168, 85, 247, 0.05); }
+
+    .reciente {
+      border-radius: 10px;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin: 0 -8px;
+      transition: background 0.15s ease;
+    }
+
+    .reciente:hover { background: rgba(168, 85, 247, 0.06); }
+
+    .rosca-valor, .rosca-resto {
+      transition: stroke-width 0.2s ease, stroke-dasharray 0.8s ease;
+      cursor: pointer;
+    }
+
+    .rosca-resto {
+      fill: none;
+      stroke: rgba(178, 148, 255, 0.14);
+    }
+
+    .rosca-pct.monto { font-size: 19px; }
+
     @keyframes brillo {
       to { background-position: -200% 0; }
     }
@@ -731,6 +864,9 @@ export class InicioComponent implements OnInit {
   private maxGrafico = 1;
 
   gastosPorCategoria: TotalPorCategoria[] = [];
+  activo: { i: number; x: number; yi: number; yg: number } | null = null;
+  hoverRosca: 'gastado' | 'libre' | null = null;
+  vista = { ingresos: 0, gastos: 0, balance: 0, deudas: 0 };
   recientes: Movimiento[] = [];
 
   formato = formatoMoneda;
@@ -751,6 +887,18 @@ export class InicioComponent implements OnInit {
   get mesActualTexto(): string {
     const d = new Date();
     return `${this.MESES[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  get roscaRestoTrazo(): string {
+    const c = 2 * Math.PI * 56;
+    const pct = Math.min(100, Math.max(0, this.presupuestoPct ?? 0));
+    return `${((100 - pct) / 100) * c} ${c}`;
+  }
+
+  get roscaRestoOffset(): string {
+    const c = 2 * Math.PI * 56;
+    const pct = Math.min(100, Math.max(0, this.presupuestoPct ?? 0));
+    return `${-(pct / 100) * c}`;
   }
 
   get roscaTrazo(): string {
@@ -784,6 +932,7 @@ export class InicioComponent implements OnInit {
           .filter((f): f is string => !!f)
           .sort();
         this.proximoVencimiento = conFecha.length ? conFecha[0] : null;
+        this.animar(this.deudasPendientes, (v) => (this.vista.deudas = v));
       },
       error: (e) => (this.error = mensajeDeError(e))
     });
@@ -847,6 +996,9 @@ export class InicioComponent implements OnInit {
     this.barrasGastos = this.barrasDe(this.serie.map((m) => m.gastos));
     this.construirGrafico();
     this.actualizarRosca();
+    this.animar(this.ingresosMes, (v) => (this.vista.ingresos = v));
+    this.animar(this.gastosMes, (v) => (this.vista.gastos = v));
+    this.animar(this.balanceMes, (v) => (this.vista.balance = v));
   }
 
   private calcularDelta(actual: number, anterior: number): Delta | null {
@@ -906,6 +1058,35 @@ export class InicioComponent implements OnInit {
   anchoBarra(t: TotalPorCategoria): number {
     const max = Math.max(...this.gastosPorCategoria.map((g) => Number(g.total)), 1);
     return Math.round((Number(t.total) / max) * 100);
+  }
+
+  alPasar(i: number): void {
+    const pi = this.puntosIngresosLista[i];
+    const pg = this.puntosGastosLista[i];
+    if (pi && pg) {
+      this.activo = { i, x: pi.x, yi: pi.y, yg: pg.y };
+    }
+  }
+
+  transformTooltip(i: number): string {
+    if (i === 0) return 'translateX(-4%)';
+    if (i === this.serie.length - 1) return 'translateX(-96%)';
+    return 'translateX(-50%)';
+  }
+
+  restantePresupuesto(): number {
+    return Math.max(0, this.presupuestoMes - this.gastosMes);
+  }
+
+  private animar(objetivo: number, aplicar: (v: number) => void): void {
+    const duracion = 900;
+    const inicio = performance.now();
+    const paso = (t: number) => {
+      const p = Math.min(1, (t - inicio) / duracion);
+      aplicar(Math.round(objetivo * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
   }
 
   colorCategoria(i: number): string {

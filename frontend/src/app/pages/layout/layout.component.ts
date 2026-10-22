@@ -413,6 +413,11 @@ import { AuthService } from '../../core/auth.service';
         display: flex;
       }
     }
+    /* Interactividad (Bloque 10) */
+    .menu a { transition: background 0.18s ease, color 0.18s ease, translate 0.18s ease; }
+    @media (min-width: 1024px) { .menu a:hover { translate: 3px 0; } }
+    .salir { transition: background 0.15s ease, scale 0.15s ease; }
+    .salir:active { scale: 0.92; }
   `]
 })
 export class LayoutComponent {

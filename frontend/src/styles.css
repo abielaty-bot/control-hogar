@@ -321,3 +321,21 @@ button.peligro:hover:not(:disabled) {
     font-size: 21px;
   }
 }
+
+/* ---------- Interactividad (Bloque 10) ---------- */
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.tarjeta { animation: aparecer .4s ease both; }
+
+tbody tr { transition: background .15s ease; }
+tbody tr:hover { background: rgba(168, 85, 247, .06); }
+
+.boton-primario { transition: filter .15s ease, transform .15s ease, box-shadow .2s ease; }
+.boton-primario:hover { filter: brightness(1.1); box-shadow: 0 6px 18px rgba(168, 85, 247, .35); }
+.boton-primario:active { transform: scale(.98); }
+.boton-secundario { transition: border-color .15s ease, background .15s ease, transform .15s ease; }
+.boton-secundario:active { transform: scale(.98); }
+
+input, select, textarea { transition: border-color .15s ease, box-shadow .15s ease; }
