@@ -9,7 +9,7 @@ import { esErrorDeConexion, mensajeDeError } from '../../core/util';
 
 // Espera maxima para el ingreso: si el servidor gratuito esta
 // dormido, no se queda girando para siempre (arreglo del 2026-10-21).
-const ESPERA_MAX_MS = 25000;
+const ESPERA_MAX_MS = 15000;
 
 @Component({
   selector: 'app-login',
