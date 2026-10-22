@@ -1,96 +1,188 @@
-/* Estilos globales de Control Hogar */
+/* ============================================================
+   Control Hogar — sistema de diseño «Violeta Nocturno»
+   Inspirado en el lenguaje visual de TrendyAdmin (oscuro premium):
+   fondo ciruela profundo, degradado violeta→magenta, tarjetas
+   muy redondeadas y acentos de color por tipo de dato.
+   ============================================================ */
+
+:root {
+  --fondo: #0f071e;
+  --fondo-2: #170b2e;
+  --tarjeta: #1d1139;
+  --tarjeta-2: #241547;
+  --borde: rgba(178, 148, 255, 0.14);
+  --texto: #f4f1ff;
+  --texto-suave: #a79fd1;
+  --texto-tenue: #7d74a8;
+  --primario: #a855f7;
+  --primario-claro: #c084fc;
+  --magenta: #e935c1;
+  --degradado: linear-gradient(120deg, #7c3aed 0%, #b832e0 55%, #e935c1 100%);
+  --exito: #34d399;
+  --exito-fondo: rgba(52, 211, 153, 0.14);
+  --peligro: #fb7185;
+  --peligro-fondo: rgba(251, 113, 133, 0.13);
+  --ambar: #fbbf24;
+  --cielo: #38bdf8;
+  --radio: 20px;
+  --radio-chico: 13px;
+  --sombra: 0 18px 40px rgba(5, 2, 14, 0.45);
+}
+
 * {
   box-sizing: border-box;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #f3f5f9;
-  color: #1f2937;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background:
+    radial-gradient(1100px 500px at 85% -10%, rgba(124, 58, 237, 0.22), transparent 60%),
+    radial-gradient(900px 480px at -10% 110%, rgba(233, 53, 193, 0.10), transparent 55%),
+    var(--fondo);
+  background-attachment: fixed;
+  color: var(--texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(168, 85, 247, 0.45);
 }
 
 h1, h2, h3 {
   margin: 0 0 12px;
+  letter-spacing: -0.01em;
 }
 
+h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+p {
+  color: var(--texto-suave);
+}
+
+a {
+  color: var(--primario-claro);
+}
+
+/* ===== Contenedores y tarjetas ===== */
+
 .contenedor {
-  max-width: 980px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 26px 22px 56px;
 }
 
 .tarjeta {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 18px;
-  margin-bottom: 18px;
+  background: linear-gradient(180deg, var(--tarjeta-2), var(--tarjeta));
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--sombra);
+  animation: aparecer 0.45s ease both;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===== Tablas ===== */
+
+.tabla-envoltura {
+  overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
 th, td {
   text-align: left;
-  padding: 8px 10px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(178, 148, 255, 0.09);
+  vertical-align: middle;
 }
 
 th {
-  background: #4472c4;
-  color: #ffffff;
-  font-size: 13px;
+  color: var(--texto-tenue);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  background: transparent;
+  border-bottom: 1px solid var(--borde);
+}
+
+tbody tr, table tr {
+  transition: background 0.15s ease;
+}
+
+table tr:hover td {
+  background: rgba(168, 85, 247, 0.05);
 }
 
 .numero {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
+
+/* ===== Formularios ===== */
 
 input, select, textarea {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  padding: 11px 13px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
   font-size: 14px;
+  font-family: inherit;
   margin-bottom: 10px;
+  background: #150a2b;
+  color: var(--texto);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--texto-tenue);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primario);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25);
+}
+
+select option {
+  background: #1d1139;
+  color: var(--texto);
 }
 
 label {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 4px;
-}
-
-button {
-  background: #4472c4;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 9px 16px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #355fa8;
-}
-
-button.secundario {
-  background: #e5e7eb;
-  color: #1f2937;
-}
-
-button.peligro {
-  background: #dc2626;
-}
-
-button.peligro:hover {
-  background: #b91c1c;
+  color: var(--texto-suave);
+  margin-bottom: 5px;
 }
 
 .fila-form {
@@ -99,67 +191,133 @@ button.peligro:hover {
   gap: 12px;
 }
 
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
+/* ===== Botones ===== */
+
+button {
+  background: var(--degradado);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(168, 85, 247, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
-.kpi {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-left: 5px solid #4472c4;
-  border-radius: 10px;
-  padding: 16px;
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(168, 85, 247, 0.45);
 }
 
-.kpi .monto {
-  font-size: 24px;
-  font-weight: 700;
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
-.kpi.gasto {
-  border-left-color: #dc2626;
+button.secundario {
+  background: var(--tarjeta-2);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  box-shadow: none;
 }
 
-.kpi.ingreso {
-  border-left-color: #16a34a;
+button.secundario:hover:not(:disabled) {
+  background: #2c1a56;
+  box-shadow: none;
 }
+
+button.peligro {
+  background: rgba(251, 113, 133, 0.16);
+  color: #fda4af;
+  border: 1px solid rgba(251, 113, 133, 0.35);
+  box-shadow: none;
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+button.peligro:hover:not(:disabled) {
+  background: rgba(251, 113, 133, 0.26);
+  box-shadow: none;
+}
+
+/* ===== Avisos ===== */
 
 .error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  border-radius: 8px;
-  padding: 10px 14px;
+  background: var(--peligro-fondo);
+  border: 1px solid rgba(251, 113, 133, 0.4);
+  color: #fecdd3;
+  border-radius: var(--radio-chico);
+  padding: 12px 15px;
   margin-bottom: 14px;
+  font-size: 14px;
 }
 
 .ok {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  border-radius: 8px;
-  padding: 10px 14px;
+  background: var(--exito-fondo);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #a7f3d0;
+  border-radius: var(--radio-chico);
+  padding: 12px 15px;
   margin-bottom: 14px;
+  font-size: 14px;
 }
+
+/* ===== Etiquetas de estado ===== */
 
 .etiqueta {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  background: #e5e7eb;
+  background: var(--tarjeta-2);
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
 }
 
 .etiqueta.PAGADA {
-  background: #bbf7d0;
-  color: #166534;
+  background: var(--exito-fondo);
+  color: #6ee7b7;
+  border-color: rgba(52, 211, 153, 0.35);
 }
 
 .etiqueta.PENDIENTE {
-  background: #fde68a;
-  color: #92400e;
+  background: rgba(251, 191, 36, 0.13);
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+/* ===== KPIs (base; el detalle visual vive en Inicio) ===== */
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* ===== Responsive: tablas con desplazamiento en pantallas chicas ===== */
+
+@media (max-width: 640px) {
+  .contenedor {
+    padding: 18px 13px 44px;
+  }
+
+  .tarjeta {
+    padding: 17px 15px;
+    border-radius: 17px;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  h2 {
+    font-size: 21px;
+  }
 }

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
+import { timeout } from 'rxjs';
+
 import { ApiService } from '../../core/api.service';
 import { mensajeDeError } from '../../core/util';
 
@@ -63,25 +65,32 @@ import { mensajeDeError } from '../../core/util';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #4472c4, #1f3864);
-      padding: 24px 0;
+      padding: 26px 14px;
+      background:
+        radial-gradient(800px 420px at 85% -10%, rgba(124, 58, 237, 0.35), transparent 60%),
+        radial-gradient(700px 420px at -10% 110%, rgba(233, 53, 193, 0.18), transparent 55%),
+        var(--fondo);
     }
     .registro {
-      width: 380px;
-      max-width: 92vw;
+      width: 400px;
+      max-width: 94vw;
+      padding: 28px 28px 22px;
     }
     .registro h1 {
       text-align: center;
+      font-size: 25px;
+      font-weight: 800;
     }
     .sub {
       text-align: center;
-      color: #64748b;
-      margin-top: 0;
+      color: var(--texto-suave);
+      margin: 0 0 18px;
+      font-size: 14px;
     }
     .nota {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 0;
+      font-size: 13px;
+      color: var(--texto-suave);
+      margin: 16px 0 0;
       text-align: center;
     }
   `]
@@ -123,7 +132,7 @@ export class RegistroComponent {
     }
 
     this.cargando = true;
-    this.api.registrarUsuario(cuerpo).subscribe({
+    this.api.registrarUsuario(cuerpo).pipe(timeout(25000)).subscribe({
       next: () => {
         this.cargando = false;
         this.router.navigate(['/login'], { queryParams: { registrado: '1' } });
