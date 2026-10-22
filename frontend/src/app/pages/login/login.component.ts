@@ -65,6 +65,11 @@ const ESPERA_MAX_MS = 15000;
 
         <p class="olvido"><a routerLink="/recuperar">¿Olvidaste tu contraseña?</a></p>
 
+        <label class="recordar">
+          <input type="checkbox" [(ngModel)]="recordarSesion" name="recordar">
+          Mantener mi sesión iniciada
+        </label>
+
         <button type="submit" class="boton-auth" [disabled]="cargando || segundosBloqueo > 0" style="width:100%">
           {{ textoBoton }}
         </button>
@@ -168,7 +173,25 @@ const ESPERA_MAX_MS = 15000;
     .olvido {
       text-align: right;
       font-size: 13px;
-      margin: 2px 0 14px;
+      margin: 2px 0 12px;
+    }
+    .recordar {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--texto-suave);
+      cursor: pointer;
+      margin: 0 0 16px;
+    }
+    .recordar input {
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      flex: none;
+      accent-color: var(--primario);
+      cursor: pointer;
     }
     .boton-auth {
       background: linear-gradient(120deg, #7c3aed 0%, #a21caf 60%, #be185d 130%);
@@ -208,6 +231,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   segundosBloqueo = 0;
   private intervaloBloqueo: ReturnType<typeof setInterval> | null = null;
+  recordarSesion = true;
   mostrarClave = false;
   bloqMayus = false;
   correoTocado = false;
@@ -225,8 +249,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Ping de calentamiento: despierta el servidor (y la base)
-    // mientras el usuario escribe sus datos.
+    // Si ya hay una sesion guardada, directo al panel.
+    if (this.auth.estaLogueado()) {
+      this.router.navigate(['/']);
+      return;
+    }
+    // Ping de calentamiento: mantiene activa la conexion con el
+    // servidor mientras el usuario escribe sus datos.
     this.calentar();
   }
 
@@ -293,7 +322,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Carga por etapas: si tarda, se explica que esta esperando.
     this.temporizador = setTimeout(() => (this.esperando = true), 6000);
 
-    this.auth.iniciarSesion(this.correo.trim(), this.contrasena)
+    this.auth.iniciarSesion(this.correo.trim(), this.contrasena, this.recordarSesion)
       .pipe(timeout(ESPERA_MAX_MS))
       .subscribe({
         next: () => {

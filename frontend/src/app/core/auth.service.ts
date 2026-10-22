@@ -10,13 +10,18 @@ const CLAVE_USUARIO = 'ch_usuario';
 
 // Autenticacion contra la API: el backend usa HTTP Basic con el correo
 // y la contrasena cifrada en BCrypt del lado del servidor (Bloque 2).
+//
+// Donde se guarda la sesion lo elige el usuario en el login:
+// - «Mantener mi sesion iniciada»: localStorage (sobrevive a cerrar
+//   la app; solo muere con el boton Salir).
+// - Sin la casilla: sessionStorage (se borra al cerrar la pestana).
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
   private http = inject(HttpClient);
 
   // Valida las credenciales y localiza al usuario por su correo.
-  iniciarSesion(correo: string, contrasena: string): Observable<Usuario> {
+  iniciarSesion(correo: string, contrasena: string, recordar = true): Observable<Usuario> {
     const token = this.codificar(correo, contrasena);
     const headers = new HttpHeaders({
       Authorization: `Basic ${token}`
@@ -38,19 +43,27 @@ export class AuthService {
           return usuario;
         }),
         tap((usuario) => {
-          sessionStorage.setItem(CLAVE_TOKEN, token);
-          sessionStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+          const destino = recordar ? localStorage : sessionStorage;
+          const otro = recordar ? sessionStorage : localStorage;
+          destino.setItem(CLAVE_TOKEN, token);
+          destino.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+          // Sin copias viejas en el otro almacen.
+          otro.removeItem(CLAVE_TOKEN);
+          otro.removeItem(CLAVE_USUARIO);
         })
       );
   }
 
   cerrarSesion(): void {
+    localStorage.removeItem(CLAVE_TOKEN);
+    localStorage.removeItem(CLAVE_USUARIO);
     sessionStorage.removeItem(CLAVE_TOKEN);
     sessionStorage.removeItem(CLAVE_USUARIO);
   }
 
   token(): string | null {
-    return sessionStorage.getItem(CLAVE_TOKEN);
+    return localStorage.getItem(CLAVE_TOKEN)
+      ?? sessionStorage.getItem(CLAVE_TOKEN);
   }
 
   estaLogueado(): boolean {
@@ -58,7 +71,8 @@ export class AuthService {
   }
 
   usuarioActual(): Usuario | null {
-    const datos = sessionStorage.getItem(CLAVE_USUARIO);
+    const datos = localStorage.getItem(CLAVE_USUARIO)
+      ?? sessionStorage.getItem(CLAVE_USUARIO);
     return datos ? (JSON.parse(datos) as Usuario) : null;
   }
 
