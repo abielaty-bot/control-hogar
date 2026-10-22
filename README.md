@@ -2,6 +2,40 @@
 
 Control Hogar es una API REST para gestionar información económica doméstica.
 
+## Demo en vivo
+
+- **Aplicación web:** https://heartfelt-salmiakki-d68dcd.netlify.app
+- **API:** https://control-hogar.onrender.com (salud: `GET /api/salud`)
+
+Para probarla, crea tu cuenta desde la opción **Crear cuenta** de la
+propia aplicación. El despliegue es continuo desde la rama `main`.
+
+## Arquitectura en producción
+
+| Pieza | Tecnología | Dónde corre |
+|---|---|---|
+| Frontend SPA | Angular 20 + TypeScript | Netlify |
+| Backend API REST | Spring Boot 4 · Java 21 | Render (Docker) |
+| Base de datos (producción) | PostgreSQL | Neon |
+| Base de datos (desarrollo) | MySQL (`controlhogar`) | Local |
+
+## Mapa del sílabo
+
+| Tema | Dónde está en el proyecto |
+|---|---|
+| 1. JPA (entidades y relaciones) | `entity/` — 18 entidades, 28 relaciones |
+| 2. Maven | `pom.xml`, `mvnw` |
+| 3. Git / GitHub | Historial de este repositorio |
+| 4. Spring Boot y perfiles | `application.properties`, `application-dev.properties`, `application-prod.properties` |
+| 5. Spring Data JPA (JPQL, paginación) | `repository/` — 18 repositorios `@Repository` |
+| 6. Spring Web MVC (estereotipos) | `controller/` (8 `@RestController`), `service/` (8 `@Service`), `repository/` |
+| 7. Spring Security | `security/` — admin en memoria + autenticación personalizada con BCrypt |
+| 8. Spring RESTful | 42 endpoints en `controller/` |
+| 9. JasperReports | `reportes/movimientos_por_categoria.jrxml` y `GET /api/reportes/*/pdf` |
+| 10. Despliegue | `Dockerfile`, `render.yaml`, Netlify |
+| 11. Angular y TypeScript | `frontend/src/app/` |
+| 12. Componentes Angular | 12 componentes + servicios en `frontend/src/app/pages/` y `core/` |
+
 ## Tecnologías utilizadas
 
 - Java 21
@@ -114,14 +148,14 @@ La API quedará disponible en:
 - Conexión con MySQL funcionando
 - Compilación y pruebas exitosas
 
-## Funcionalidades pendientes
+## Funcionalidades que figuraban como pendientes (ya implementadas)
 
-- Inicio de sesión
-- Spring Security
-- Cifrado de contraseñas con BCrypt
-- Autenticación mediante JWT
-- CRUD completos para las demás entidades
-- Interfaz web
+- Inicio de sesión ✔
+- Spring Security ✔
+- Cifrado de contraseñas con BCrypt ✔
+- CRUD completos para las demás entidades ✔
+- Interfaz web ✔
+- Autenticación mediante JWT: no implementada por diseño; la API usa HTTP Basic sin estado (Tema 7)
 
 ## Consultas JPQL y perfiles (Bloque 1)
 
@@ -159,9 +193,9 @@ Nuevo reporte disenado como plantilla `.jrxml` (editable en Jaspersoft Studio), 
 
 ## Despliegue en Render (Bloque 5 - Tema 10)
 
-El silabo pedia Heroku, pero Heroku exige tarjeta; se despliega en **Render** (gratis, sin tarjeta) usando Docker:
+El silabo pedia Heroku, pero Heroku exige tarjeta; se despliega en **Render** usando Docker:
 
-1. En [render.com](https://render.com): **New + Web Service**, conectar el repositorio de GitHub y elegir la rama `completar-silabo`. Render detecta el `Dockerfile` (o usar el `render.yaml` como Blueprint).
+1. En [render.com](https://render.com): **New + Web Service**, conectar el repositorio de GitHub y elegir la rama `main`. Render detecta el `Dockerfile` (o usar el `render.yaml` como Blueprint).
 2. Crear la base de datos. Dos opciones:
    - **PostgreSQL de Render (recomendado, todo en un solo lugar):** New + PostgreSQL (plan Free). En su panel, seccion Connections, tomar Host, Port, Database, Username y Password.
    - **MySQL externo** (Clever Cloud, TiDB Cloud, etc.): crear la BD y tomar sus datos de conexion.
@@ -172,7 +206,7 @@ El silabo pedia Heroku, pero Heroku exige tarjeta; se despliega en **Render** (g
    - `DB_DRIVER` = `org.postgresql.Driver` (para MySQL no hace falta: el valor por defecto es el de MySQL)
 4. **Create Web Service** y esperar el primer despliegue (compila con el Dockerfile). La app queda en `https://control-hogar.onrender.com` (el nombre puede variar).
 
-Notas: el plan gratuito duerme el servicio tras 15 minutos sin uso y despierta en ~1 minuto. Las tablas se crean solas al arrancar (`ddl-auto=update`), pero la BD arranca vacia: registrar un usuario nuevo con `POST /api/usuarios`. Ademas, el `pom.xml` declara los repositorios de Jaspersoft porque `jasperreports-pdf` usa una version de OpenPDF que no esta en Maven Central; sin eso, cualquier compilacion limpia (como la de Docker) falla.
+Notas: las tablas se crean solas al arrancar (`ddl-auto=update`), pero la BD arranca vacia: registrar un usuario nuevo con `POST /api/usuarios`. Ademas, el `pom.xml` declara los repositorios de Jaspersoft porque `jasperreports-pdf` usa una version de OpenPDF que no esta en Maven Central; sin eso, cualquier compilacion limpia (como la de Docker) falla.
 
 ## Frontend Angular (Bloque 6 - Temas 11 y 12)
 
@@ -191,3 +225,16 @@ npm start
 ```
 
 y abrir `http://localhost:4200` con el backend corriendo en el puerto 8080. La URL de la API se configura en `frontend/src/environments/environment.ts` (desarrollo) y `environment.prod.ts` (produccion, con la URL de Render del Bloque 5).
+
+## Continuación del proyecto (Bloques 7 a 15)
+
+- **Bloque 7:** endpoint público de salud `GET /api/salud` y monitoreo programado con GitHub Actions que lo verifica periódicamente en horario útil.
+- **Bloque 8:** rediseño visual del frontend: tema oscuro violeta, panel con KPIs, gráfico de ingresos vs. gastos, medidor de presupuesto y diseño adaptable (PC, tablet y celular).
+- **Bloque 9:** el endpoint de salud también valida la conexión con la base de datos (`SELECT 1`); la espera máxima del ingreso quedó en 15 segundos.
+- **Bloque 10:** interactividad del panel: tooltip con valores en el gráfico, rosca de presupuesto interactiva, contadores animados y efectos al pasar el mouse.
+- **Bloque 11:** login endurecido (mostrar/ocultar contraseña, aviso de Bloq Mayús, validación por campo, `autocomplete`, página `/recuperar`), cabeceras de seguridad del sitio (`_headers`: CSP, X-Frame-Options, HSTS) y límite de intentos en el servidor con registro de fallos.
+- **Bloque 12:** corrección de compatibilidad entre la CSP y la carga de estilos de Angular (`inlineCritical` desactivado).
+- **Bloque 13:** medidor de progreso al generar el PDF, con mensajes por etapas, tope de 45 segundos y confirmación de descarga.
+- **Bloque 14:** bloqueo progresivo según OWASP (1, 5, 15 y 30 minutos) con cabecera `Retry-After` y cuenta regresiva visible en el login.
+- **Bloque 15:** casilla «Mantener mi sesión iniciada»: sesión persistente en `localStorage` o temporal en `sessionStorage`, a elección del usuario.
+
