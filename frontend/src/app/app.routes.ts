@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth.guard';
 import { LoginComponent } from './pages/login/login.component';
 import { RegistroComponent } from './pages/registro/registro.component';
+import { RecuperarComponent } from './pages/recuperar/recuperar.component';
 import { LayoutComponent } from './pages/layout/layout.component';
 import { InicioComponent } from './pages/inicio/inicio.component';
 import { MovimientosComponent } from './pages/movimientos/movimientos.component';
@@ -16,6 +17,7 @@ import { ReportesComponent } from './pages/reportes/reportes.component';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
+  { path: 'recuperar', component: RecuperarComponent },
   {
     path: '',
     component: LayoutComponent,

@@ -2,6 +2,7 @@ package pe.controlhogar.controlhogar.security;
 
 import java.util.List;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,6 +32,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * - API sin estado (STATELESS) con autenticacion HTTP Basic.
  * - El registro de usuarios (POST /api/usuarios) es publico; todo lo
  *   demas requiere autenticacion.
+ * - Limite de intentos de ingreso con bloqueo temporal
+ *   (LimiteIntentosFilter, defensa contra fuerza bruta).
  */
 @Configuration
 @EnableWebSecurity
@@ -91,10 +95,23 @@ public class SecurityConfig {
         return fuente;
     }
 
+    // El filtro de limite de intentos solo debe correr dentro de
+    // la cadena de seguridad; sin esto, el contenedor lo registraria
+    // ademas por su cuenta y correria dos veces.
+    @Bean
+    public FilterRegistrationBean<LimiteIntentosFilter> registroLimiteIntentos(
+            LimiteIntentosFilter filtro) {
+        FilterRegistrationBean<LimiteIntentosFilter> registro =
+                new FilterRegistrationBean<>(filtro);
+        registro.setEnabled(false);
+        return registro;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            AuthenticationManager authenticationManager) throws Exception {
+            AuthenticationManager authenticationManager,
+            LimiteIntentosFilter limiteIntentos) throws Exception {
         http
                 .authenticationManager(authenticationManager)
                 .cors(Customizer.withDefaults())
@@ -105,7 +122,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/salud").permitAll()
                         .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults());
+                .httpBasic(Customizer.withDefaults())
+                .addFilterBefore(limiteIntentos, BasicAuthenticationFilter.class);
 
         return http.build();
     }

@@ -1,14 +1,16 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { timeout } from 'rxjs';
 
+import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { esErrorDeConexion, mensajeDeError } from '../../core/util';
 
 // Espera maxima para el ingreso: si el servidor gratuito esta
-// dormido, no se queda girando para siempre (arreglo del 2026-10-21).
+// dormido, no se queda girando para siempre (tope fijado por el
+// dueno del proyecto: 15 segundos, 2026-10-22).
 const ESPERA_MAX_MS = 15000;
 
 @Component({
@@ -17,10 +19,12 @@ const ESPERA_MAX_MS = 15000;
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="login-fondo">
-      <form class="tarjeta login" (ngSubmit)="ingresar()">
-        <div class="logo">🏠</div>
+      <form class="tarjeta login" (ngSubmit)="ingresar()" novalidate>
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-5h5v5"/></svg>
+        </div>
         <h1>Control <span>Hogar</span></h1>
-        <p class="sub">Ingresa con tu correo y contraseña</p>
+        <p class="lema">Tus gastos, claros y en orden</p>
 
         <div class="error" *ngIf="error">
           {{ error }}
@@ -31,18 +35,38 @@ const ESPERA_MAX_MS = 15000;
 
         <label for="correo">Correo</label>
         <input id="correo" type="email" [(ngModel)]="correo" name="correo"
-               required placeholder="tucorreo@ejemplo.com">
+               required maxlength="120" autocomplete="email" spellcheck="false"
+               placeholder="tucorreo@ejemplo.com"
+               (blur)="correoTocado = true" (focus)="calentar()">
+        <p class="campo-error" *ngIf="mostrarErrorCorreo">{{ errorCorreo }}</p>
 
         <label for="contrasena">Contraseña</label>
-        <input id="contrasena" type="password" [(ngModel)]="contrasena"
-               name="contrasena" required placeholder="••••••••">
+        <div class="campo-clave">
+          <input id="contrasena" [type]="mostrarClave ? 'text' : 'password'"
+                 [(ngModel)]="contrasena" name="contrasena"
+                 required maxlength="72" autocomplete="current-password"
+                 placeholder="••••••••"
+                 (blur)="claveTocada = true"
+                 (keydown)="detectarBloqMayus($event)"
+                 (keyup)="detectarBloqMayus($event)">
+          <button type="button" class="ojo" (click)="mostrarClave = !mostrarClave"
+                  [attr.aria-label]="mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  [attr.title]="mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <svg *ngIf="!mostrarClave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg *ngIf="mostrarClave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 8 10 8a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 8 10 8a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/></svg>
+          </button>
+        </div>
+        <p class="campo-error" *ngIf="mostrarErrorClave">{{ errorClave }}</p>
+        <p class="aviso-mayus" *ngIf="bloqMayus">⚠ Bloq Mayús está activado</p>
 
-        <button type="submit" [disabled]="cargando" style="width:100%">
-          {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+        <p class="olvido"><a routerLink="/recuperar">¿Olvidaste tu contraseña?</a></p>
+
+        <button type="submit" class="boton-auth" [disabled]="cargando" style="width:100%">
+          {{ textoBoton }}
         </button>
 
         <p class="nota">
-          ¿Aún no tienes cuenta? <a routerLink="/registro">Regístrate aquí</a>
+          ¿Aún no tienes cuenta? <a routerLink="/registro">Crear cuenta</a>
         </p>
       </form>
     </div>
@@ -63,6 +87,8 @@ const ESPERA_MAX_MS = 15000;
       width: 380px;
       max-width: 94vw;
       padding: 30px 28px 24px;
+      border: 1px solid rgba(196, 164, 255, 0.38);
+      translate: 0 -3vh;
     }
     .logo {
       width: 58px;
@@ -73,14 +99,14 @@ const ESPERA_MAX_MS = 15000;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      box-shadow: 0 12px 26px rgba(168, 85, 247, 0.45);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
     }
+    .logo svg { width: 30px; height: 30px; }
     .login h1 {
       text-align: center;
       font-size: 26px;
       font-weight: 800;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .login h1 span {
       background: var(--degradado);
@@ -88,11 +114,61 @@ const ESPERA_MAX_MS = 15000;
       background-clip: text;
       color: transparent;
     }
-    .sub {
+    .lema {
       text-align: center;
       color: var(--texto-suave);
-      margin: 0 0 20px;
-      font-size: 14px;
+      margin: 0 0 22px;
+      font-size: 13.5px;
+    }
+    .login label {
+      color: #efe9fb;
+      font-weight: 600;
+    }
+    .login input {
+      font-size: 16px;
+      border-color: rgba(196, 164, 255, 0.4);
+    }
+    .login input::placeholder { color: #a394cf; }
+    .campo-error {
+      color: #fda4af;
+      font-size: 12.5px;
+      margin: -6px 0 10px;
+    }
+    .aviso-mayus {
+      color: #fcd34d;
+      font-size: 12.5px;
+      margin: -6px 0 10px;
+    }
+    .campo-clave { position: relative; }
+    .campo-clave input { width: 100%; padding-right: 44px; }
+    .ojo {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-58%);
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      border-radius: 9px;
+      color: var(--texto-suave);
+      cursor: pointer;
+      box-shadow: none;
+    }
+    .ojo:hover { color: var(--texto); background: rgba(168, 85, 247, 0.14); }
+    .ojo svg { width: 19px; height: 19px; }
+    .olvido {
+      text-align: right;
+      font-size: 13px;
+      margin: 2px 0 14px;
+    }
+    .boton-auth {
+      background: linear-gradient(120deg, #7c3aed 0%, #a21caf 60%, #be185d 130%);
+      margin-top: 2px;
     }
     .nota {
       font-size: 13px;
@@ -108,9 +184,10 @@ const ESPERA_MAX_MS = 15000;
     }
   `]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   private auth = inject(AuthService);
+  private api = inject(ApiService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -121,6 +198,15 @@ export class LoginComponent {
   cargando = false;
   errorConexion = false;
 
+  mostrarClave = false;
+  bloqMayus = false;
+  correoTocado = false;
+  claveTocada = false;
+  enviado = false;
+  despertando = false;
+  private temporizador: ReturnType<typeof setTimeout> | null = null;
+  private ultimoCalentamiento = 0;
+
   constructor() {
     // Mensaje de exito al volver desde la pantalla de registro.
     if (this.route.snapshot.queryParamMap.get('registrado') === '1') {
@@ -128,25 +214,91 @@ export class LoginComponent {
     }
   }
 
+  ngOnInit(): void {
+    // Ping de calentamiento: despierta el servidor (y la base)
+    // mientras el usuario escribe sus datos.
+    this.calentar();
+  }
+
+  calentar(): void {
+    const ahora = Date.now();
+    if (ahora - this.ultimoCalentamiento < 60000) {
+      return;
+    }
+    this.ultimoCalentamiento = ahora;
+    this.api.salud().subscribe({ error: () => undefined });
+  }
+
+  detectarBloqMayus(evento: KeyboardEvent): void {
+    this.bloqMayus = !!evento.getModifierState?.('CapsLock');
+  }
+
+  get errorCorreo(): string {
+    const c = this.correo.trim();
+    if (!c) return 'Escribe tu correo.';
+    if (c.length > 120) return 'El correo es demasiado largo.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c)) {
+      return 'Escribe un correo válido (ej.: nombre@correo.com).';
+    }
+    return '';
+  }
+
+  get errorClave(): string {
+    if (!this.contrasena) return 'Escribe tu contraseña.';
+    if (this.contrasena.length > 72) return 'La contraseña es demasiado larga.';
+    return '';
+  }
+
+  get mostrarErrorCorreo(): boolean {
+    return (this.correoTocado || this.enviado) && !!this.errorCorreo;
+  }
+
+  get mostrarErrorClave(): boolean {
+    return (this.claveTocada || this.enviado) && !!this.errorClave;
+  }
+
+  get textoBoton(): string {
+    if (!this.cargando) return 'Ingresar';
+    return this.despertando
+      ? 'El servidor está despertando…'
+      : 'Ingresando...';
+  }
+
   ingresar(): void {
+    this.enviado = true;
+    if (this.errorCorreo || this.errorClave) {
+      return;
+    }
     this.error = '';
     this.errorConexion = false;
     this.cargando = true;
+    this.despertando = false;
+    // Carga por etapas: si tarda, se explica que esta despertando.
+    this.temporizador = setTimeout(() => (this.despertando = true), 6000);
 
     this.auth.iniciarSesion(this.correo.trim(), this.contrasena)
       .pipe(timeout(ESPERA_MAX_MS))
       .subscribe({
         next: () => {
-          this.cargando = false;
+          this.detenerCarga();
           this.router.navigate(['/']);
         },
         error: (e) => {
-          this.cargando = false;
+          this.detenerCarga();
           this.errorConexion = esErrorDeConexion(e);
           this.error = e?.status === 401
             ? 'Correo o contraseña incorrectos'
             : mensajeDeError(e);
         }
       });
+  }
+
+  private detenerCarga(): void {
+    this.cargando = false;
+    this.despertando = false;
+    if (this.temporizador) {
+      clearTimeout(this.temporizador);
+      this.temporizador = null;
+    }
   }
 }

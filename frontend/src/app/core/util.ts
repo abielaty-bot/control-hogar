@@ -18,6 +18,10 @@ export function mensajeDeError(e: any): string {
     return 'Sesión no válida o credenciales incorrectas';
   }
 
+  if (e?.status === 429) {
+    return 'Demasiados intentos fallidos. Espera unos minutos e inténtalo de nuevo.';
+  }
+
   if (e?.status === 403) {
     return 'No tienes permiso para realizar esta acción.';
   }

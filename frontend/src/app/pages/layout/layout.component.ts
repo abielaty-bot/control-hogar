@@ -16,7 +16,7 @@ import { AuthService } from '../../core/auth.service';
 
     <aside class="lateral" [class.abierto]="menuAbierto">
       <div class="marca">
-        <div class="marca-icono">🏠</div>
+        <div class="marca-icono"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-5h5v5"/></svg></div>
         <div class="marca-texto">Control <span>Hogar</span></div>
       </div>
 
@@ -107,6 +107,7 @@ import { AuthService } from '../../core/auth.service';
       padding: 2px 8px 18px;
     }
 
+    .marca-icono svg { width: 22px; height: 22px; }
     .marca-icono {
       width: 42px;
       height: 42px;
