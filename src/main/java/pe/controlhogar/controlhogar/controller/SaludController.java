@@ -18,11 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
  * Responde sin autenticacion para que un monitoreo externo
  * (el vigia de GitHub Actions) compruebe que la API esta viva.
  *
- * Ademas toca la base de datos con un SELECT 1: en los planes
- * gratuitos duermen TANTO Render (la API) como Neon (la base),
- * y asi cada visita del vigia mantiene despiertas las dos capas.
- * Sin esto, el primer ingreso del dia pagaba el despertar de
- * la base (mas de 12 segundos medidos).
+ * Ademas toca la base de datos con un SELECT 1 en cada visita,
+ * de modo que la comprobacion tambien valida la conexion con
+ * la base de datos y la mantiene activa.
  */
 @RestController
 @RequestMapping("/api/salud")

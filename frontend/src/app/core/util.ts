@@ -3,13 +3,12 @@
 // Traduce cualquier error de la peticion a un mensaje amable en
 // espanol. Nunca devuelve el texto crudo de Angular (en ingles).
 export function mensajeDeError(e: any): string {
-  // Tiempo de espera agotado (rxjs timeout): tipico cuando el
-  // servidor gratuito esta despertando.
+  // Tiempo de espera agotado (rxjs timeout).
   if (e?.name === 'TimeoutError') {
-    return 'El servidor está tardando demasiado en responder (puede estar despertando). Espera unos segundos e inténtalo de nuevo.';
+    return 'La conexión está tardando más de lo normal. Espera unos segundos e inténtalo de nuevo.';
   }
 
-  // Sin respuesta del servidor: red caida o servidor dormido.
+  // Sin respuesta del servidor: red caida o servicio no disponible.
   if (e?.status === 0 || e?.status === undefined) {
     return 'Sin conexión con el servidor. Revisa tu internet e inténtalo de nuevo.';
   }

@@ -31,8 +31,8 @@ export class ApiService {
     return this.http.post<Usuario>(`${this.base}/usuarios`, cuerpo);
   }
 
-  // Ping de salud publico: despierta el servidor y la base de
-  // datos mientras el usuario escribe en el login.
+  // Ping de salud publico: mantiene activa la conexion con el
+  // servidor mientras el usuario escribe en el login.
   salud(): Observable<unknown> {
     return this.http.get(`${this.base}/salud`);
   }

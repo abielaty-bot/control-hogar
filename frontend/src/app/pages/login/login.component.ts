@@ -8,9 +8,8 @@ import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
 import { esErrorDeConexion, mensajeDeError } from '../../core/util';
 
-// Espera maxima para el ingreso: si el servidor gratuito esta
-// dormido, no se queda girando para siempre (tope fijado por el
-// dueno del proyecto: 15 segundos, 2026-10-22).
+// Espera maxima para el ingreso: si el servidor tarda en
+// responder, no se queda girando para siempre (tope: 15 s).
 const ESPERA_MAX_MS = 15000;
 
 @Component({
@@ -203,7 +202,7 @@ export class LoginComponent implements OnInit {
   correoTocado = false;
   claveTocada = false;
   enviado = false;
-  despertando = false;
+  esperando = false;
   private temporizador: ReturnType<typeof setTimeout> | null = null;
   private ultimoCalentamiento = 0;
 
@@ -259,8 +258,8 @@ export class LoginComponent implements OnInit {
 
   get textoBoton(): string {
     if (!this.cargando) return 'Ingresar';
-    return this.despertando
-      ? 'El servidor está despertando…'
+    return this.esperando
+      ? 'Un momento más…'
       : 'Ingresando...';
   }
 
@@ -272,9 +271,9 @@ export class LoginComponent implements OnInit {
     this.error = '';
     this.errorConexion = false;
     this.cargando = true;
-    this.despertando = false;
-    // Carga por etapas: si tarda, se explica que esta despertando.
-    this.temporizador = setTimeout(() => (this.despertando = true), 6000);
+    this.esperando = false;
+    // Carga por etapas: si tarda, se explica que esta esperando.
+    this.temporizador = setTimeout(() => (this.esperando = true), 6000);
 
     this.auth.iniciarSesion(this.correo.trim(), this.contrasena)
       .pipe(timeout(ESPERA_MAX_MS))
@@ -295,7 +294,7 @@ export class LoginComponent implements OnInit {
 
   private detenerCarga(): void {
     this.cargando = false;
-    this.despertando = false;
+    this.esperando = false;
     if (this.temporizador) {
       clearTimeout(this.temporizador);
       this.temporizador = null;
