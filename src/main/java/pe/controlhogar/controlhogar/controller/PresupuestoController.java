@@ -92,7 +92,7 @@ public class PresupuestoController {
     @PostMapping("/{id}/detalle")
     public ResponseEntity<PresupuestoCategoria> agregarDetalle(
             @PathVariable Long id,
-            @Valid @RequestBody PresupuestoCategoria detalle) {
+            @RequestBody PresupuestoCategoria detalle) {
         PresupuestoCategoria detalleGuardado =
                 presupuestoService.agregarDetalle(id, detalle);
 
@@ -110,7 +110,7 @@ public class PresupuestoController {
     @PutMapping("/detalle/{detalleId}")
     public ResponseEntity<PresupuestoCategoria> actualizarDetalle(
             @PathVariable Long detalleId,
-            @Valid @RequestBody PresupuestoCategoria detalle) {
+            @RequestBody PresupuestoCategoria detalle) {
         return ResponseEntity.ok(
                 presupuestoService.actualizarDetalle(detalleId, detalle));
     }

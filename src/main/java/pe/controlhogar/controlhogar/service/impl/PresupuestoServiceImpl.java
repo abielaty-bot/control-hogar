@@ -138,6 +138,13 @@ public class PresupuestoServiceImpl implements PresupuestoService {
                     "Debe indicar el ID de la categoría");
         }
 
+        if (detalle.getMontoAsignado() == null
+                || detalle.getMontoAsignado().signum() <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El monto asignado debe ser mayor que cero");
+        }
+
         Categoria categoria = categoriaRepository
                 .findByIdAndActivoTrue(detalle.getCategoria().getId())
                 .orElseThrow(() -> new ResponseStatusException(
@@ -173,6 +180,13 @@ public class PresupuestoServiceImpl implements PresupuestoService {
             Long detalleId,
             PresupuestoCategoria datos) {
         PresupuestoCategoria detalleActual = buscarDetalle(detalleId);
+
+        if (datos.getMontoAsignado() == null
+                || datos.getMontoAsignado().signum() <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El monto asignado debe ser mayor que cero");
+        }
 
         detalleActual.setMontoAsignado(datos.getMontoAsignado());
 

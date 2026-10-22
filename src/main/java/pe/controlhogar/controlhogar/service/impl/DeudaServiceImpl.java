@@ -65,6 +65,32 @@ public class DeudaServiceImpl implements DeudaService {
     public Deuda guardar(Deuda deuda) {
         validarUsuarioRecibido(deuda);
 
+        if (deuda.getNombre() == null || deuda.getNombre().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El nombre de la deuda es obligatorio");
+        }
+
+        if (deuda.getMontoTotal() == null
+                || deuda.getMontoTotal().signum() <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El monto total debe ser mayor que cero");
+        }
+
+        if (deuda.getSaldoPendiente() != null
+                && deuda.getSaldoPendiente().signum() < 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El saldo pendiente no puede ser negativo");
+        }
+
+        if (deuda.getFechaInicio() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La fecha de inicio es obligatoria");
+        }
+
         Usuario usuario = buscarUsuarioActivo(deuda.getUsuario().getId());
 
         deuda.setId(null);

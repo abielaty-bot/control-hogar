@@ -50,7 +50,7 @@ public class DeudaController {
 
     @PostMapping
     public ResponseEntity<Deuda> guardar(
-            @Valid @RequestBody Deuda deuda) {
+            @RequestBody Deuda deuda) {
         Deuda deudaGuardada = deudaService.guardar(deuda);
 
         URI ubicacion = ServletUriComponentsBuilder
@@ -91,7 +91,7 @@ public class DeudaController {
     @PostMapping("/{id}/pagos")
     public ResponseEntity<PagoDeuda> registrarPago(
             @PathVariable Long id,
-            @Valid @RequestBody PagoDeuda pago) {
+            @RequestBody PagoDeuda pago) {
         PagoDeuda pagoGuardado = deudaService.registrarPago(id, pago);
 
         URI ubicacion = ServletUriComponentsBuilder
