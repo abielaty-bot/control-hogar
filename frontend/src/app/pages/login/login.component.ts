@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -32,6 +32,11 @@ const ESPERA_MAX_MS = 15000;
         </div>
         <div class="ok" *ngIf="mensajeOk">{{ mensajeOk }}</div>
 
+        <div class="error bloqueo" *ngIf="segundosBloqueo > 0">
+          Demasiados intentos fallidos. Podrás intentarlo de nuevo en
+          <strong>{{ tiempoBloqueo }}</strong>
+        </div>
+
         <label for="correo">Correo</label>
         <input id="correo" type="email" [(ngModel)]="correo" name="correo"
                required maxlength="120" autocomplete="email" spellcheck="false"
@@ -60,7 +65,7 @@ const ESPERA_MAX_MS = 15000;
 
         <p class="olvido"><a routerLink="/recuperar">¿Olvidaste tu contraseña?</a></p>
 
-        <button type="submit" class="boton-auth" [disabled]="cargando" style="width:100%">
+        <button type="submit" class="boton-auth" [disabled]="cargando || segundosBloqueo > 0" style="width:100%">
           {{ textoBoton }}
         </button>
 
@@ -181,9 +186,13 @@ const ESPERA_MAX_MS = 15000;
       padding: 7px 16px;
       font-size: 13px;
     }
+    .bloqueo strong {
+      font-variant-numeric: tabular-nums;
+      font-size: 15px;
+    }
   `]
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
 
   private auth = inject(AuthService);
   private api = inject(ApiService);
@@ -197,6 +206,8 @@ export class LoginComponent implements OnInit {
   cargando = false;
   errorConexion = false;
 
+  segundosBloqueo = 0;
+  private intervaloBloqueo: ReturnType<typeof setInterval> | null = null;
   mostrarClave = false;
   bloqMayus = false;
   correoTocado = false;
@@ -256,7 +267,14 @@ export class LoginComponent implements OnInit {
     return (this.claveTocada || this.enviado) && !!this.errorClave;
   }
 
+  get tiempoBloqueo(): string {
+    const m = Math.floor(this.segundosBloqueo / 60);
+    const s = this.segundosBloqueo % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
   get textoBoton(): string {
+    if (this.segundosBloqueo > 0) return `Espera ${this.tiempoBloqueo}`;
     if (!this.cargando) return 'Ingresar';
     return this.esperando
       ? 'Un momento más…'
@@ -284,12 +302,45 @@ export class LoginComponent implements OnInit {
         },
         error: (e) => {
           this.detenerCarga();
+          if (e?.status === 429) {
+            // Bloqueo temporal: cuenta regresiva con los segundos
+            // exactos que informa el servidor.
+            const seg = Number(e?.error?.reintentarEnSegundos) || 60;
+            this.iniciarBloqueo(seg);
+            return;
+          }
           this.errorConexion = esErrorDeConexion(e);
           this.error = e?.status === 401
             ? 'Correo o contraseña incorrectos'
             : mensajeDeError(e);
         }
       });
+  }
+
+  iniciarBloqueo(segundos: number): void {
+    this.detenerBloqueo();
+    this.segundosBloqueo = Math.max(1, Math.round(segundos));
+    this.intervaloBloqueo = setInterval(() => {
+      this.segundosBloqueo--;
+      if (this.segundosBloqueo <= 0) {
+        this.detenerBloqueo();
+      }
+    }, 1000);
+  }
+
+  private detenerBloqueo(): void {
+    if (this.intervaloBloqueo) {
+      clearInterval(this.intervaloBloqueo);
+      this.intervaloBloqueo = null;
+    }
+    this.segundosBloqueo = 0;
+  }
+
+  ngOnDestroy(): void {
+    this.detenerBloqueo();
+    if (this.temporizador) {
+      clearTimeout(this.temporizador);
+    }
   }
 
   private detenerCarga(): void {
