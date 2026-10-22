@@ -70,7 +70,7 @@ import { AuthService } from '../../core/auth.service';
         <button class="hamburguesa" (click)="menuAbierto = !menuAbierto" aria-label="Menú">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
         </button>
-        <div class="cabecera-marca">🏠 Control Hogar</div>
+        <div class="cabecera-marca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-5h5v5"/></svg> Control Hogar</div>
         <div class="cabecera-espacio"></div>
         <a class="boton-nuevo" routerLink="/movimientos">+ Registrar movimiento</a>
         <div class="avatar chico" title="{{ auth.nombreCompleto() }}">{{ iniciales }}</div>
@@ -419,6 +419,7 @@ import { AuthService } from '../../core/auth.service';
     @media (min-width: 1024px) { .menu a:hover { translate: 3px 0; } }
     .salir { transition: background 0.15s ease, scale 0.15s ease; }
     .salir:active { scale: 0.92; }
+    .cabecera-marca svg { width: 20px; height: 20px; vertical-align: -4px; color: #d8b4fe; }
   `]
 })
 export class LayoutComponent {
